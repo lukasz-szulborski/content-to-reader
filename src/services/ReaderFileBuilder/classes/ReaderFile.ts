@@ -5,7 +5,7 @@ import { FileReaderBinaryFormat } from "@types";
 
 interface ReaderFileConstructor {
   /**
-   * Path where temporary file lives
+   * Path where temporary file was saved
    */
   readonly temporaryPath: string;
   /**
