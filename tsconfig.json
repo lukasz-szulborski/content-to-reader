@@ -23,6 +23,11 @@
     "noUnusedLocals": true,                           /* Enable error reporting when local variables aren't read. */
     /* Completeness */
     
-    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
+
+    "paths": {
+      "@services/*": ["./src/services/*"],
+      "@types": ["./src/types/index.ts"]
+  }
   }
 }
