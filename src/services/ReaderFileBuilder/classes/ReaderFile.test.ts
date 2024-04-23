@@ -86,7 +86,7 @@ describe("Managing binaries with ReaderFile", () => {
         } catch (error) {
           return false;
         }
-      })()
+      })();
 
       expect(tmpExists).toBe(false);
 
@@ -109,10 +109,33 @@ describe("Managing binaries with ReaderFile", () => {
         } catch (error) {
           return false;
         }
-      })()
+      })();
 
       expect(tmpExists).toBe(false);
-    })
+    });
+
+    describe("Cleanup should invalidate the instance", () => {
+      test("Don't allow saving", async () => {
+        const destinationPath = `${os.tmpdir()}/DESTINATION_FILE_${uuid()}.epub`;
+        const instance = new ReaderFile({
+          format: "EPUB",
+          temporaryPath: goodPath,
+        });
+
+        await instance.cleanup();
+
+        await expect(instance.save(destinationPath)).rejects.toThrow(/Fatal/);
+      });
+      test("Don't allow accessing temporary path", async () => {
+        const instance = new ReaderFile({
+          format: "EPUB",
+          temporaryPath: goodPath,
+        });
+
+        await instance.cleanup();
+        expect(() => instance.temporaryPath).toThrow(/Fatal/);
+      });
+    });
 
     afterEach(async () => {
       try {

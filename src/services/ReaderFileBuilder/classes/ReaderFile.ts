@@ -43,6 +43,8 @@ type ReaderFileClass = ReaderFileConstructor & ReaderFileMethods;
 export class ReaderFile implements ReaderFileClass {
   private readonly _temporaryPath: string;
   private readonly _format: FileReaderBinaryFormat;
+  // This field is mutable as it doesn't make sense to create a new `ReaderFile` that represents non-existing file. Conceptually `ReaderFile` always represents some existing uncommited ebook.
+  private _didCleanup: boolean = false;
 
   constructor({ format, temporaryPath }: ReaderFileConstructor) {
     // Constructor assigns properties and check whether passed
@@ -58,6 +60,7 @@ export class ReaderFile implements ReaderFileClass {
   }
 
   async save(destination: string): Promise<Buffer> {
+    this.checkCleanup();
     await asyncFs.copyFile(
       this._temporaryPath,
       destination,
@@ -67,14 +70,15 @@ export class ReaderFile implements ReaderFileClass {
     return newFile;
   }
 
-  
   async cleanup(): Promise<void> {
     try {
       await asyncFs.unlink(this._temporaryPath);
-    } catch { }
+      this._didCleanup = true;
+    } catch {}
   }
 
   get temporaryPath() {
+    this.checkCleanup();
     return this._temporaryPath;
   }
 
@@ -94,5 +98,18 @@ export class ReaderFile implements ReaderFileClass {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Method that verifies the state of this instance.
+   *
+   * We shouldn't allow any operations on this instance if `cleanup()` was called on it.
+   */
+  private checkCleanup(): boolean {
+    if (!this._didCleanup) return true;
+
+    throw new Error(
+      `Fatal error. File at ${this._temporaryPath} doesn't exist anymore. \`clean()\` was called on this instance.`
+    );
   }
 }
