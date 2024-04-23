@@ -1,13 +1,21 @@
 import { ReaderFile } from "@services/ReaderFileBuilder";
 
+interface ArticleSnippet {
+  htmlSnippet: string;
+  metadata: {
+    title: string;
+    url: string;
+    keywords?: string[];
+  };
+}
+
 interface ReaderFileBuilderMethods {
   /**
    * Takes HTML snippets and transforms them into `ReaderFile` that points to a binary.
    *
    * @argument htmlSnippets - each being a section that semantically represent an article. In the best case scenario `<article>...</article>` should be the topmost element in such a snippet.
-   *
    */
-  build(htmlSnippets: string[]): Promise<ReaderFile>;
+  build(htmlSnippets: ArticleSnippet[]): Promise<ReaderFile>;
 }
 
 type ReaderFileBuilderClass = ReaderFileBuilderMethods;
@@ -22,7 +30,7 @@ type ReaderFileBuilderClass = ReaderFileBuilderMethods;
  * For implementation details refer to specific functions' descriptions.
  */
 export class ReaderFileBuilder implements ReaderFileBuilderClass {
-  build(htmlSnippets: string[]): Promise<ReaderFile> {
+  build(htmlSnippets: ArticleSnippet[]): Promise<ReaderFile> {
     throw new Error("Method not implemented.");
   }
 }
