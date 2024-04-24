@@ -1,2 +1,2 @@
-export * from "./classes/ReaderFile";
-export * from "./classes/ReaderFileBuilder";
+export { ReaderFile } from "./classes/ReaderFile";
+export { ReaderFileBuilder } from "./classes/ReaderFileBuilder";
