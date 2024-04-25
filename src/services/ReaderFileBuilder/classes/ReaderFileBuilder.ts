@@ -1,4 +1,5 @@
 import { HtmlValidate } from "html-validate/node";
+import { JSDOM } from "jsdom";
 
 import {
   ArticleSnippet,
@@ -36,6 +37,18 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
     if (Object.entries(validationErrors).length > 0) {
       throw new Error(this.articleErrorToHumanReadable(validationErrors));
     }
+    // --- Get all images from snippets and download
+    const getImagesForSnippetJobs: Promise<ArticleSnippet>[] = htmlSnippets.map(
+      (article) => new Promise((resolve, reject) => {
+        // Find all <img> tags, download images, change src to file:// so epub generato can use it, map and save as article.
+        
+        return resolve(article)
+      })
+    );
+
+    const articlesWithLocalImages = await Promise.all(getImagesForSnippetJobs)
+
+    // --- Build EPUB
 
     return;
   }
@@ -94,7 +107,7 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
 /**
  * Map where the key is the URL of the article and value is the
  * set of errors associated with that article.
- * 
+ *
  * Can be returned as a result of an error joining function.
  * (multiple articles were validated)
  * */
