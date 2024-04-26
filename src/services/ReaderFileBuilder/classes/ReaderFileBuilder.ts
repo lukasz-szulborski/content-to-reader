@@ -79,20 +79,26 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
   /**
    * Validate many articles at once.
    *
-   * Handles joining errors
+   * Handles joining errors.
    */
   private async validateArticles(
     articles: ArticleSnippet[]
   ): Promise<ArticleUrlErrorsMap> {
-    // @TODO: can we use many threads here?
-    return articles.reduce(async (acc, article) => {
-      const errorTypes = await this.validateArticle(article);
-      if (errorTypes.size === 0) return acc;
-      return {
-        ...acc,
-        [article.metadata.url]: errorTypes,
-      };
-    }, {});
+    return (
+      (
+        await Promise.all(
+          articles.map(async (a) => {
+            const errorTypes = await this.validateArticle(a);
+            if (errorTypes.size === 0) return {};
+            return {
+              [a.metadata.url]: errorTypes,
+            };
+          })
+        )
+      )
+        // Merge all errors by url
+        .reduce((acc, article) => Object.assign(acc, article), {})
+    );
   }
 
   private articleErrorToHumanReadable(errors: ArticleUrlErrorsMap): string {
