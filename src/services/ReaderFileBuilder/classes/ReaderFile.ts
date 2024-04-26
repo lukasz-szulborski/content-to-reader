@@ -43,16 +43,16 @@ type ReaderFileClass = ReaderFileConstructor & ReaderFileMethods;
 export class ReaderFile implements ReaderFileClass {
   private readonly _temporaryPath: string;
   private readonly _format: FileReaderBinaryFormat;
-  // This field is mutable as it doesn't make sense to create a new `ReaderFile` that represents non-existing file. Conceptually `ReaderFile` always represents some existing uncommited ebook.
+  // This field is mutable as it doesn't make sense to create a new `ReaderFile` that represents non-existing file. Conceptually `ReaderFile` always represents some existing uncommited ebook. If cleanup is done, the instance is done.
   private _didCleanup: boolean = false;
 
   constructor({ format, temporaryPath }: ReaderFileConstructor) {
-    // Constructor assigns properties and check whether passed
+    // Constructor assigns properties and checks whether passed
     // file path is valid and accessible.
     const fileAccessible = this.isTmpAccessibleSync(temporaryPath);
     if (!fileAccessible)
       throw new Error(
-        `Fatal error. Node cannot access file at ${temporaryPath}. Try promoting Node's OS permissions (RWX).`
+        `Fatal error. Node cannot access file at ${temporaryPath}.`
       );
 
     this._temporaryPath = temporaryPath;
