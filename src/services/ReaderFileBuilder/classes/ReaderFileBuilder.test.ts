@@ -37,28 +37,36 @@ const MOCK_CORRECT_ARTICLE: ArticleSnippet = {
 
 const readerFileBuilder = new ReaderFileBuilder();
 
-describe("Test `.build` validation", () => {
-  test("When no articles", async () => {
-    await expect(() => readerFileBuilder.build([])).rejects.toThrow(
-      /No snippets/
-    );
+describe(`ReaderFileBuilder.build method`, () => {
+  describe("Test validation", () => {
+    test("When no articles", async () => {
+      await expect(() => readerFileBuilder.build([])).rejects.toThrow(
+        /No snippets/
+      );
+    });
+    test("When an article with an empty title", async () => {
+      // I like JS, but those shallow copies...
+      const article = {
+        ...MOCK_CORRECT_ARTICLE,
+        metadata: { ...MOCK_CORRECT_ARTICLE.metadata },
+      };
+      article.metadata.title = "";
+      await expect(() => readerFileBuilder.build([article])).rejects.toThrow(
+        /EMPTY_TITLE/
+      );
+    });
+    test("When an article with a bad HTML", async () => {
+      const article = { ...MOCK_CORRECT_ARTICLE };
+      article.htmlSnippet = EXAMPLE_BAD_HTML;
+      await expect(() => readerFileBuilder.build([article])).rejects.toThrow(
+        /INVALID_HTML/
+      );
+    });
   });
-  test("When an article with an empty title", async () => {
-    // I like JS, but those shallow copies...
-    const article = {
-      ...MOCK_CORRECT_ARTICLE,
-      metadata: { ...MOCK_CORRECT_ARTICLE.metadata },
-    };
-    article.metadata.title = "";
-    await expect(() => readerFileBuilder.build([article])).rejects.toThrow(
-      /EMPTY_TITLE/
-    );
-  });
-  test("When an article with a bad HTML", async () => {
-    const article = { ...MOCK_CORRECT_ARTICLE };
-    article.htmlSnippet = EXAMPLE_BAD_HTML;
-    await expect(() => readerFileBuilder.build([article])).rejects.toThrow(
-      /INVALID_HTML/
-    );
+
+  describe("Test rollback and cleanup", () => {
+    test("/tmp directory should be removed on return", async () => {
+      // @TODO: ...
+    });
   });
 });
