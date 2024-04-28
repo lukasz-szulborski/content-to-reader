@@ -22,7 +22,7 @@ interface ReaderFileMethods {
    */
   save(destination: string): Promise<Buffer>;
   /**
-   * Removes all temporary files related to this `ReaderFile` so they aren't left hanging forever.
+   * Removes all temporary files related to this `ReaderFile` so they aren't left hanging forever (including EPUB itself).
    *
    * Unfortunately JavaScript doesn't implement any notion of a destructor/finalizer
    * (GC takes care of wiping this instance), therefore this function must be called explicitly
