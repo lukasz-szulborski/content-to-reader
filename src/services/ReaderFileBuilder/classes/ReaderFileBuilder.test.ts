@@ -69,4 +69,11 @@ describe(`ReaderFileBuilder.build method`, () => {
       // @TODO: ...
     });
   });
+
+  describe("Test valid build run", () => {
+    test("Output filename has today's date in it", async () => {})
+    test("Output file isn't empty", () => {})
+    test("Output file has EPUB extension", () => {})
+    test("Output file is a valid EPUB file", () => {}) // @TODO: Can this be done?
+  })
 });
