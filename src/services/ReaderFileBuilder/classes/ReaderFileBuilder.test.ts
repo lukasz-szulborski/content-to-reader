@@ -64,12 +64,6 @@ describe(`ReaderFileBuilder.build method`, () => {
     });
   });
 
-  describe("Test rollback and cleanup", () => {
-    test("/tmp directory should be removed on return", async () => {
-      // @TODO: ...
-    });
-  });
-
   describe("Test valid build run", () => {
     test("Output filename has today's date in it", async () => {})
     test("Output file isn't empty", () => {})
