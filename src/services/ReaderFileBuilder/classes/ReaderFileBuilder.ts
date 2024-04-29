@@ -46,11 +46,12 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
     }
 
     // --- Build EPUB
+    const padDateMonth = (n: number) => n.toString().padStart(2, "0");
     const epubBuffer = await epubGen(
       {
-        title: `${now.getFullYear()}-${
+        title: `${now.getFullYear()}-${padDateMonth(
           now.getMonth() + 1
-        }-${now.getDate()} News Digest`,
+        )}-${padDateMonth(now.getDate())} News Digest`,
         author: "kindle-news-digest",
         prependChapterTitles: true,
       },
