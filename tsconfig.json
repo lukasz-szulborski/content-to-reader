@@ -3,6 +3,7 @@
     "target": "es2016",
     "module": "commonjs",
     "rootDir": "./src",
+    "baseUrl": "./src",
     "outDir": "./dist",
     "removeComments": true,
     "esModuleInterop": true,
@@ -14,8 +15,8 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "paths": {
-      "@services/*": ["./src/services/*"],
-      "@types": ["./src/types/index.ts"]
+      "@services/*": ["services/*"],
+      "@typings/*": ["types/*"]
     }
   },
   "include": ["src/**/*"],

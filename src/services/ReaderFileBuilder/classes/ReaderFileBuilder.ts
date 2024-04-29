@@ -10,7 +10,7 @@ import {
   ArticleSnippet,
   ArticleSnippetStaticValidationResultType,
 } from "@services/ReaderFileBuilder/types";
-import { ReaderFile } from "@services/ReaderFileBuilder/classes/ReaderFile";
+import { ReaderFile } from "@services/ReaderFileBuilder";
 
 interface ReaderFileBuilderMethods {
   /**
