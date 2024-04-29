@@ -1,4 +1,7 @@
-import { ReaderFileBuilder } from "./ReaderFileBuilder";
+import fs from "fs/promises";
+import path from "path";
+
+import { ReaderFileBuilder } from "@services/ReaderFileBuilder";
 import { ArticleSnippet } from "@services/ReaderFileBuilder/types";
 
 const EXAMPLE_GOOD_HTML = `
@@ -76,8 +79,20 @@ describe(`ReaderFileBuilder.build method`, () => {
       expect(temporaryPath.includes(expectedStringDate)).toBe(true);
       await cleanup();
     });
-    test("Output file isn't empty", () => {});
-    test("Output file has EPUB extension", () => {});
+    test("Output file isn't empty", async () => {
+      const book = await readerFileBuilder.build([MOCK_CORRECT_ARTICLE]);
+      const { temporaryPath, cleanup } = book;
+      const bookFileStats = await fs.stat(temporaryPath);
+      expect(bookFileStats.size).toBeGreaterThan(0);
+      await cleanup();
+    });
+    test("Output file has EPUB extension", async () => {
+      const book = await readerFileBuilder.build([MOCK_CORRECT_ARTICLE]);
+      const { temporaryPath, cleanup } = book;
+      const extension = path.extname(temporaryPath).toLowerCase();
+      expect(extension).toBe(".epub");
+      await cleanup();
+    });
     test("Output file is a valid EPUB file", () => {}); // @TODO: Can this be done?
   });
 });
