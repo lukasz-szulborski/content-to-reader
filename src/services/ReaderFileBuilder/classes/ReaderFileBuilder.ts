@@ -94,7 +94,8 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
       validationRes.results.find(
         (err) =>
           err.messages.find(
-            (msg) => msg.ruleId === "parser-error" || msg.severity > 2
+            ({ ruleId, severity }) =>
+              ["parser-error", "close-order"].includes(ruleId) || severity > 2
           ) !== undefined
       ) === undefined;
     if (!isHtmlValid) validationErrors.add("INVALID_HTML");
