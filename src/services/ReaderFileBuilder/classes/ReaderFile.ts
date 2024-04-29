@@ -1,7 +1,7 @@
 import { accessSync, constants } from "node:fs";
 import asyncFs from "node:fs/promises";
 
-import { FileReaderBinaryFormat } from "@types";
+import { FileReaderBinaryFormat } from "@typings/common";
 
 interface ReaderFileConstructor {
   /**
