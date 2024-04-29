@@ -47,11 +47,12 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
 
     // --- Build EPUB
     const padDateMonth = (n: number) => n.toString().padStart(2, "0");
+    const todaysDateString = `${now.getFullYear()}-${padDateMonth(
+      now.getMonth() + 1
+    )}-${padDateMonth(now.getDate())}`;
     const epubBuffer = await epubGen(
       {
-        title: `${now.getFullYear()}-${padDateMonth(
-          now.getMonth() + 1
-        )}-${padDateMonth(now.getDate())} News Digest`,
+        title: `${todaysDateString} News Digest`,
         author: "kindle-news-digest",
         prependChapterTitles: true,
       },
@@ -62,7 +63,10 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
     );
 
     // Save file
-    const filePath = path.join(tmpdir(), `knd_article_${uuid()}.epub`);
+    const filePath = path.join(
+      tmpdir(),
+      `knd_article_${todaysDateString}_${uuid()}.epub`
+    );
     await fs.writeFile(filePath, epubBuffer);
 
     return new ReaderFile({

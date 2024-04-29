@@ -18,7 +18,7 @@ const EXAMPLE_BAD_HTML = `
 <html>
 <body>
 
-<h1>My First Heading</h1>
+<h1>My First Heading<h1>
 <p>My first paragraph.
 
 </body>
@@ -65,9 +65,19 @@ describe(`ReaderFileBuilder.build method`, () => {
   });
 
   describe("Test valid build run", () => {
-    test("Output filename has today's date in it", async () => {})
-    test("Output file isn't empty", () => {})
-    test("Output file has EPUB extension", () => {})
-    test("Output file is a valid EPUB file", () => {}) // @TODO: Can this be done?
-  })
+    test("Output filename has today's date in it", async () => {
+      const book = await readerFileBuilder.build([MOCK_CORRECT_ARTICLE]);
+      const { temporaryPath, cleanup } = book;
+      const padDateMonth = (n: number) => n.toString().padStart(2, "0");
+      const now = new Date();
+      const expectedStringDate = `${now.getFullYear()}-${padDateMonth(
+        now.getMonth() + 1
+      )}-${padDateMonth(now.getDate())}`;
+      expect(temporaryPath.includes(expectedStringDate)).toBe(true);
+      await cleanup();
+    });
+    test("Output file isn't empty", () => {});
+    test("Output file has EPUB extension", () => {});
+    test("Output file is a valid EPUB file", () => {}); // @TODO: Can this be done?
+  });
 });

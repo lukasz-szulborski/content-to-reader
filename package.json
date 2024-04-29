@@ -4,7 +4,7 @@
   "description": "CLI utility for Kindle owners. Just give it a bunch of articles' URLs and it will merge them into EPUB and send it to your reader.",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --verbose false",
     "dev:watch": "nodemon src/index.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
