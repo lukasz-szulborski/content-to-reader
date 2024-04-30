@@ -93,6 +93,5 @@ describe(`ReaderFileBuilder.build method`, () => {
       expect(extension).toBe(".epub");
       await cleanup();
     });
-    test("Output file is a valid EPUB file", () => {}); // @TODO: Can this be done?
   });
 });
