@@ -2,7 +2,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import fs from "node:fs/promises";
 
-import { HtmlValidate } from "html-validate/node";
 import { v4 as uuid } from "uuid";
 import epubGen from "epub-gen-memory";
 
@@ -11,6 +10,7 @@ import {
   ArticleSnippetStaticValidationResultType,
 } from "@services/ReaderFileBuilder/types";
 import { ReaderFile } from "@services/ReaderFileBuilder";
+import { isHtmlValid } from "@utils/isHtmlValid";
 
 interface ReaderFileBuilderMethods {
   /**
@@ -88,21 +88,8 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
       validationErrors.add("EMPTY_TITLE");
 
     // Validate HTML
-    const htmlValidator = new HtmlValidate();
-    const validationRes = await htmlValidator.validateString(
-      article.htmlSnippet
-    );
-
-    const isHtmlValid =
-      validationRes.valid ||
-      validationRes.results.find(
-        (err) =>
-          err.messages.find(
-            ({ ruleId, severity }) =>
-              ["parser-error", "close-order"].includes(ruleId) || severity > 2
-          ) !== undefined
-      ) === undefined;
-    if (!isHtmlValid) validationErrors.add("INVALID_HTML");
+    const htmlValid = await isHtmlValid(article.htmlSnippet);
+    if (!htmlValid) validationErrors.add("INVALID_HTML");
 
     return validationErrors;
   }
