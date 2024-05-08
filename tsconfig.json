@@ -16,7 +16,8 @@
     "skipLibCheck": true,
     "paths": {
       "@services/*": ["services/*"],
-      "@typings/*": ["types/*"]
+      "@typings/*": ["types/*"],
+      "@utils/*": ["utils/*"]
     }
   },
   "include": ["src/**/*"],
