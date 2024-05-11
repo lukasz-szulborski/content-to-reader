@@ -15,6 +15,7 @@ interface ArticleClass {
  * `<article>` element should contain the article.
  * 
  *  @TODO
+ * * Move validaton logic from `ReaderFileBuilder` here. Consuming `ParsedArticle` shouldn't cause a need for validating it. It should already be a valid HTML.
  * * **[In the future]** This class should allow more sophisticated methods of extracting article elements from HTML (besides the semantic html). It could allow selecting only vital article elements from the webpage.
  */
 export class Article implements ArticleClass {
