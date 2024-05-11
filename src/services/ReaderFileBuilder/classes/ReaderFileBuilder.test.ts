@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 
 import { ReaderFileBuilder } from "@services/ReaderFileBuilder";
-import { ArticleSnippet } from "@services/ReaderFileBuilder/types";
+import { ParsedArticle } from "@services/Article/types";
 
 const EXAMPLE_GOOD_HTML = `
 <!DOCTYPE html>
@@ -28,13 +28,12 @@ const EXAMPLE_BAD_HTML = `
 </html>
 `;
 
-const MOCK_CORRECT_ARTICLE: ArticleSnippet = {
+const MOCK_CORRECT_ARTICLE: ParsedArticle = {
   htmlSnippet: EXAMPLE_GOOD_HTML,
   metadata: {
     title:
       "Biden signs bill that would ban TikTok if ByteDance fails to sell the app",
     url: "https://techcrunch.com/2024/04/24/biden-signs-bill-that-would-ban-tiktok-if-bytedance-fails-to-sell-the-app/",
-    keywords: ["TikTok", "US", "Ban"],
   },
 };
 

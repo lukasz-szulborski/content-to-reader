@@ -6,11 +6,11 @@ import { v4 as uuid } from "uuid";
 import epubGen from "epub-gen-memory";
 
 import {
-  ArticleSnippet,
   ArticleSnippetStaticValidationResultType,
 } from "@services/ReaderFileBuilder/types";
 import { ReaderFile } from "@services/ReaderFileBuilder";
 import { isHtmlValid } from "@utils/isHtmlValid";
+import { ParsedArticle } from "@services/Article/types";
 
 interface ReaderFileBuilderMethods {
   /**
@@ -18,7 +18,7 @@ interface ReaderFileBuilderMethods {
    *
    * @argument htmlSnippets - each being a section that semantically represent an article. In the best case scenario `<article>...</article>` should be the topmost element in such a snippet.
    */
-  build(htmlSnippets: ArticleSnippet[]): Promise<ReaderFile>;
+  build(htmlSnippets: ParsedArticle[]): Promise<ReaderFile>;
 }
 
 type ReaderFileBuilderClass = ReaderFileBuilderMethods;
@@ -33,7 +33,7 @@ type ReaderFileBuilderClass = ReaderFileBuilderMethods;
  * For implementation details refer to specific functions' descriptions.
  */
 export class ReaderFileBuilder implements ReaderFileBuilderClass {
-  async build(htmlSnippets: ArticleSnippet[]): Promise<ReaderFile> {
+  async build(htmlSnippets: ParsedArticle[]): Promise<ReaderFile> {
     const now = new Date();
     // --- Validate input
     if (htmlSnippets.length === 0) {
@@ -80,7 +80,7 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
    *
    * @returns set of all errors found during validation
    */
-  private async validateArticle(article: ArticleSnippet) {
+  private async validateArticle(article: ParsedArticle) {
     const validationErrors: Set<ArticleSnippetStaticValidationResultType> =
       new Set();
     // Validate article's title
@@ -100,7 +100,7 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
    * Handles joining errors.
    */
   private async validateArticles(
-    articles: ArticleSnippet[]
+    articles: ParsedArticle[]
   ): Promise<ArticleUrlErrorsMap> {
     return (
       (
