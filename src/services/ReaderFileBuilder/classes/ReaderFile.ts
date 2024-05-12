@@ -31,7 +31,7 @@ interface ReaderFileMethods {
   cleanup(): Promise<void>;
 }
 
-type ReaderFileClass = ReaderFileConstructor & ReaderFileMethods;
+type ReaderFileLike = ReaderFileConstructor & ReaderFileMethods;
 
 /**
  * An object representing EPUB saved in a temporary location. It contains a path to that emphemeral file.
@@ -40,7 +40,7 @@ type ReaderFileClass = ReaderFileConstructor & ReaderFileMethods;
  *
  * **After you're done with specific reader file, call `cleanup()` function to clean binaries from `/tmp`.**
  * */
-export class ReaderFile implements ReaderFileClass {
+export class ReaderFile implements ReaderFileLike {
   private readonly _temporaryPath: string;
   private readonly _format: FileReaderBinaryFormat;
   // This field is mutable as it doesn't make sense to create a new `ReaderFile` that represents non-existing file. Conceptually `ReaderFile` always represents some existing uncommited ebook. If cleanup is done, the instance is done.

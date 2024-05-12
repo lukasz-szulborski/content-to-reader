@@ -1,6 +1,4 @@
-export type ArticleSnippetStaticValidationResultType =
-  | "EMPTY_TITLE"
-  | "INVALID_HTML";
+export type ArticleSnippetStaticValidationResultType = "EMPTY_TITLE";
 
 export interface ArticleSnippetStaticValidationResult {
   type: ArticleSnippetStaticValidationResultType;

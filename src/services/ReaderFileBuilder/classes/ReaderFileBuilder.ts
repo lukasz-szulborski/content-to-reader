@@ -5,11 +5,8 @@ import fs from "node:fs/promises";
 import { v4 as uuid } from "uuid";
 import epubGen from "epub-gen-memory";
 
-import {
-  ArticleSnippetStaticValidationResultType,
-} from "@services/ReaderFileBuilder/types";
+import { ArticleSnippetStaticValidationResultType } from "@services/ReaderFileBuilder/types";
 import { ReaderFile } from "@services/ReaderFileBuilder";
-import { isHtmlValid } from "@utils/isHtmlValid";
 import { ParsedArticle } from "@services/Article/types";
 
 interface ReaderFileBuilderMethods {
@@ -21,7 +18,7 @@ interface ReaderFileBuilderMethods {
   build(htmlSnippets: ParsedArticle[]): Promise<ReaderFile>;
 }
 
-type ReaderFileBuilderClass = ReaderFileBuilderMethods;
+type ReaderFileBuilderLike = ReaderFileBuilderMethods;
 
 /**
  * An object that takes HTML snippets that represent articles and turns them into EPUB file.
@@ -32,7 +29,7 @@ type ReaderFileBuilderClass = ReaderFileBuilderMethods;
  *
  * For implementation details refer to specific functions' descriptions.
  */
-export class ReaderFileBuilder implements ReaderFileBuilderClass {
+export class ReaderFileBuilder implements ReaderFileBuilderLike {
   async build(htmlSnippets: ParsedArticle[]): Promise<ReaderFile> {
     const now = new Date();
     // --- Validate input
@@ -40,7 +37,7 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
       throw new Error("No snippets passed");
     }
     // Validate all articles
-    const validationErrors = await this.validateArticles(htmlSnippets);
+    const validationErrors = this.validateArticles(htmlSnippets);
     if (Object.entries(validationErrors).length > 0) {
       throw new Error(this.articleErrorToHumanReadable(validationErrors));
     }
@@ -80,16 +77,12 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
    *
    * @returns set of all errors found during validation
    */
-  private async validateArticle(article: ParsedArticle) {
+  private validateArticle(article: ParsedArticle) {
     const validationErrors: Set<ArticleSnippetStaticValidationResultType> =
       new Set();
     // Validate article's title
     if (!article.metadata.title || article.metadata.title.length === 0)
       validationErrors.add("EMPTY_TITLE");
-
-    // Validate HTML
-    const htmlValid = await isHtmlValid(article.htmlSnippet);
-    if (!htmlValid) validationErrors.add("INVALID_HTML");
 
     return validationErrors;
   }
@@ -99,21 +92,16 @@ export class ReaderFileBuilder implements ReaderFileBuilderClass {
    *
    * Handles joining errors.
    */
-  private async validateArticles(
-    articles: ParsedArticle[]
-  ): Promise<ArticleUrlErrorsMap> {
+  private validateArticles(articles: ParsedArticle[]): ArticleUrlErrorsMap {
     return (
-      (
-        await Promise.all(
-          articles.map(async (a) => {
-            const errorTypes = await this.validateArticle(a);
-            if (errorTypes.size === 0) return {};
-            return {
-              [a.metadata.url]: errorTypes,
-            };
-          })
-        )
-      )
+      articles
+        .map((a) => {
+          const errorTypes = this.validateArticle(a);
+          if (errorTypes.size === 0) return {};
+          return {
+            [a.metadata.url]: errorTypes,
+          };
+        })
         // Merge all errors by url
         .reduce((acc, article) => Object.assign(acc, article), {})
     );

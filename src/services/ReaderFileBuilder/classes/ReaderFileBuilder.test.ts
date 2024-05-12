@@ -16,18 +16,6 @@ const EXAMPLE_GOOD_HTML = `
 </html>
 `;
 
-const EXAMPLE_BAD_HTML = `
-<!DOCTYPE html>
-<html>
-<body>
-
-<h1>My First Heading<h1>
-<p>My first paragraph.
-
-</body>
-</html>
-`;
-
 const MOCK_CORRECT_ARTICLE: ParsedArticle = {
   htmlSnippet: EXAMPLE_GOOD_HTML,
   metadata: {
@@ -55,13 +43,6 @@ describe(`ReaderFileBuilder.build method`, () => {
       article.metadata.title = "";
       await expect(() => readerFileBuilder.build([article])).rejects.toThrow(
         /EMPTY_TITLE/
-      );
-    });
-    test("When an article with a bad HTML", async () => {
-      const article = { ...MOCK_CORRECT_ARTICLE };
-      article.htmlSnippet = EXAMPLE_BAD_HTML;
-      await expect(() => readerFileBuilder.build([article])).rejects.toThrow(
-        /INVALID_HTML/
       );
     });
   });

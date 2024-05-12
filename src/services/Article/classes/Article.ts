@@ -1,35 +1,52 @@
 import { JSDOM } from "jsdom";
 import { ParsedArticle, ParsedArticleMetadata } from "@services/Article/types";
+import { isHtmlValid } from "@utils/isHtmlValid";
 
-interface ArticleClass {
+interface ArticleLike {
   /**
    * Finds `<article>` element in a given HTML.
    */
-  fromSemanticHtml(): ParsedArticle;
+  fromSemanticHtml(): Promise<ParsedArticle>;
+}
+
+interface ArticleLikeConstructor {
+  /**
+   * URL to article
+   */
+  url: string;
+  /**
+   * Article HTML
+   */
+  html: string;
 }
 
 /**
- * Extracts only the article contents from the whole HTML page. 
+ * Extracts only the article contents from the whole HTML page.
  *
  * Currently works only for semantic HTML.
  * `<article>` element should contain the article.
- * 
+ *
  *  @TODO
  * * Move validaton logic from `ReaderFileBuilder` here. Consuming `ParsedArticle` shouldn't cause a need for validating it. It should already be a valid HTML.
  * * **[In the future]** This class should allow more sophisticated methods of extracting article elements from HTML (besides the semantic html). It could allow selecting only vital article elements from the webpage.
  */
-export class Article implements ArticleClass {
+export class Article implements ArticleLike {
   private _htmlSnippet: JSDOM;
+  private _rawHtmlSnippet: string;
   private _url: string;
 
-  constructor(url: string, html: string) {
+  constructor({ url, html }: ArticleLikeConstructor) {
     if (html.length === 0)
       throw new Error("You can't build Article off of empty HTML snippet.");
     this._htmlSnippet = new JSDOM(html);
+    this._rawHtmlSnippet = html;
     this._url = url;
   }
 
-  fromSemanticHtml(): ParsedArticle {
+  async fromSemanticHtml(): Promise<ParsedArticle> {
+    await this.validateHtmlSnippet();
+    // @TODO: find <article>
+    // ...
     return {
       htmlSnippet: "",
       metadata: this.getArticleMetadata(),
@@ -41,5 +58,12 @@ export class Article implements ArticleClass {
       title: this._htmlSnippet.window.document.title,
       url: this._url,
     };
+  }
+
+  private async validateHtmlSnippet(): Promise<void> {
+    const isValid = await isHtmlValid(this._rawHtmlSnippet);
+    if (!isValid) {
+      throw new Error(`${this._url}: Invalid HTML snippet`);
+    }
   }
 }
