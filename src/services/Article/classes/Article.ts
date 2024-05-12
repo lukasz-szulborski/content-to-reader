@@ -45,10 +45,13 @@ export class Article implements ArticleLike {
 
   async fromSemanticHtml(): Promise<ParsedArticle> {
     await this.validateHtmlSnippet();
-    // @TODO: find <article>
-    // ...
+    const articleElement =
+      this._htmlSnippet.window.document.querySelector("article");
+    if (articleElement === null) {
+      throw new Error(`${this._url}: No semantic <article> element found.`);
+    }
     return {
-      htmlSnippet: "",
+      htmlSnippet: articleElement.outerHTML,
       metadata: this.getArticleMetadata(),
     };
   }
