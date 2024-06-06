@@ -2,11 +2,21 @@ import { JSDOM } from "jsdom";
 import { ParsedArticle, ParsedArticleMetadata } from "@services/Article/types";
 import { isHtmlValid } from "@utils/isHtmlValid";
 
+export type ArticleContentSelector = {
+  name?: string;
+} & ({ querySelectorAll: string } | { querySelector: string });
+
 interface ArticleLike {
   /**
    * Finds `<article>` element in a given HTML.
    */
   fromSemanticHtml(): Promise<ParsedArticle>;
+  /**
+   * Creates `ParsedArticle` by concatenating elements found using selectors.
+   *
+   * Resulting HTML structure will be flat (no nesting of different selectors).
+   */
+  fromSelectors(selectors: ArticleContentSelector[]): Promise<ParsedArticle>;
 }
 
 interface ArticleLikeConstructor {
@@ -33,6 +43,7 @@ export class Article implements ArticleLike {
   private _htmlSnippet: JSDOM;
   private _rawHtmlSnippet: string;
   private _url: string;
+  private _metadata: ParsedArticleMetadata;
 
   constructor({ url, html }: ArticleLikeConstructor) {
     if (html.length === 0)
@@ -40,6 +51,7 @@ export class Article implements ArticleLike {
     this._htmlSnippet = new JSDOM(html);
     this._rawHtmlSnippet = html;
     this._url = url;
+    this._metadata = this.getArticleMetadata();
   }
 
   async fromSemanticHtml(): Promise<ParsedArticle> {
@@ -51,7 +63,38 @@ export class Article implements ArticleLike {
     }
     return {
       htmlSnippet: articleElement.outerHTML,
-      metadata: this.getArticleMetadata(),
+      metadata: this._metadata,
+    };
+  }
+
+  async fromSelectors(
+    selectors: ArticleContentSelector[]
+  ): Promise<ParsedArticle> {
+    await this.validateHtmlSnippet();
+    const JOIN_TOKEN = "<br>\n";
+    const htmlDocument = this._htmlSnippet.window.document;
+    const snippets = selectors.map((selector, i) => {
+      const isQuerySelector = "querySelector" in selector;
+      const queryResults = isQuerySelector
+        ? htmlDocument.querySelector(selector.querySelector)
+        : htmlDocument.querySelectorAll(selector.querySelectorAll);
+      if (queryResults === null) {
+        throw new Error(
+          `${this._url} -> [${
+            selector.name ?? i
+          }]: Didn't find any elements matching query.`
+        );
+      }
+      return "innerHTML" in queryResults
+        ? queryResults.outerHTML
+        : Array.from(queryResults)
+            .map((elem) => elem.outerHTML)
+            .join(JOIN_TOKEN);
+    });
+    const concatenatedSnippet = `<html>${snippets.join(JOIN_TOKEN)}</html>`;
+    return {
+      htmlSnippet: concatenatedSnippet,
+      metadata: this._metadata,
     };
   }
 
