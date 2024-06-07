@@ -3,6 +3,8 @@ import { ArticleContentSelector } from "@services/Article/classes/Article";
 import { ParsedArticle } from "@services/Article/types";
 import { fetchHtml } from "@utils/fetchHtml";
 
+const TIMEOUT = 1000 * 60;
+
 const EXAMPLE_BAD_HTML = `
 <!DOCTYPE html>
 <html>
@@ -59,7 +61,7 @@ describe("Extracting article from HTML with Article class", () => {
         rawHtml = html;
         const article = new Article({ html, url });
         parsedArticle = await article.fromSemanticHtml();
-      });
+      }, TIMEOUT);
 
       COMMON_TESTS_FOR_PARSED_ARTICLE.forEach(([name, fun]) =>
         test(name, () => fun(parsedArticle!, { rawHtml }))
@@ -90,7 +92,7 @@ describe("Extracting article from HTML with Article class", () => {
           },
         ];
         parsedArticle = await article.fromSelectors(selectors);
-      });
+      }, TIMEOUT);
 
       COMMON_TESTS_FOR_PARSED_ARTICLE.forEach(([name, fun]) =>
         test(name, () => fun(parsedArticle!, { rawHtml }))
@@ -124,7 +126,7 @@ describe("Extracting article from HTML with Article class", () => {
         await expect(() => article.fromSemanticHtml()).rejects.toThrow(
           /No semantic <article> element found/
         );
-      });
+      }, TIMEOUT);
     });
 
     describe("Using selectors API", () => {
@@ -147,7 +149,7 @@ describe("Extracting article from HTML with Article class", () => {
         ]);
         const [[url, html]] = Object.entries(articleUrlHtmlMap);
         article = new Article({ html, url });
-      });
+      }, TIMEOUT);
 
       test("Trying to access non-existing element shows error", async () => {
         await expect(() => article!.fromSelectors(selectors)).rejects.toThrow(

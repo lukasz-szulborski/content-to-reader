@@ -4,7 +4,7 @@
   "description": "CLI utility for Kindle owners. Just give it a bunch of articles' URLs and it will merge them into EPUB and send it to your reader.",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose false",
+    "test": "jest --verbose true",
     "dev:watch": "nodemon src/index.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
@@ -42,6 +42,8 @@
     "epub-gen-memory": "^1.0.10",
     "html-validate": "^8.18.2",
     "jsdom": "^24.0.0",
+    "puppeteer": "^22.10.0",
+    "puppeteer-cluster": "^0.24.0",
     "uuid": "^9.0.1"
   }
 }
