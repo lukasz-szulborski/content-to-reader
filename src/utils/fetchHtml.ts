@@ -30,6 +30,7 @@ export const fetchHtml = async (
       }
       // Sometimes browsers require verification. If that's the case then save this url for later and try fetching it the traditional way using `fetch`.
       if (httpRes?.request().redirectChain() ?? 0 > 0) {
+        // @TODO: Can I fetch this url immediately after push?
         retryUrls.push(url);
       } else {
         results[url] = await httpRes?.text();

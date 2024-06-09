@@ -1,0 +1,25 @@
+output: "./news.epub"
+toDevice:
+  deviceEmail: "6fas7dgfasd766@kindle.amazon.com"
+  senderEmail: "email@gmail.com"
+  senderPassword: "password123"
+pages:
+  - "https://techcrunch.com/2024/05/11/teslas-profitable-supercharger-network-in-limbo-after-musk-axed-entire-team/"
+  - "https://finearttutorials.com/guide/a-complete-list-of-oil-painting-techniques"
+  - url: "https://ziglang.org/learn/overview/"
+    selectors:
+      - name: "Header"
+        querySelector: ".page-content header"
+      - name: "Content"
+        querySelectorAll:
+          ".page-content .contents":
+            [
+              "h1",
+              "h2",
+              "h3",
+              "h4",
+              "h5",
+              "p",
+              "code",
+              { ".custom-tip": ["p", "div"] },
+            ]
