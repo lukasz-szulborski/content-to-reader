@@ -125,6 +125,7 @@ export class ConfigurationParser implements ConfigurationParserLike {
       return aux("", selector).trim();
     };
 
+    // Map pages config to something understandable by the internals
     const unfoldedPages = pages.map((page) => {
       if (typeof page === "string") return page;
 
