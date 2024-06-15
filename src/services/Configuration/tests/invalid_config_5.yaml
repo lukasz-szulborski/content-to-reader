@@ -1,0 +1,7 @@
+output: "./news.epub"
+pages:
+  - url: "https://ziglang.org/learn/overview/"
+    selectors:
+      - name: "Header"
+        all: ".page-content header"
+      - all: [".BAD"]

@@ -1,0 +1,4 @@
+output: "./news.epub"
+pages:
+  - 1010
+  - 0101

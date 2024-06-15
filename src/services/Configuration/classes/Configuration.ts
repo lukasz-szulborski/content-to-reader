@@ -81,16 +81,14 @@ export class ConfigurationParser implements ConfigurationParserLike {
    * One of the steps is to generate nested selectors from `selectors` key:
    * @example
    * ```js
-   * // This object snippet...
-   * ...
-   *    all: {
-   *       ".page-content .contents" : ["h1", "h2"]
-   *    }
-   * ...
+   * // this:
+   *  all: {
+   *     ".page-content .contents" : ["h1", "h2"]
+   *  }
    * // ... should result in
    * ".page-content .contents h1, .page-content .contents h2"
    * ```
-   * This comes in handy when you need to select multiple elements from certain parent element.
+   * This comes in handy when you need to select multiple elements from a certain parent element.
    */
   private interpretConfigurationObject(
     object: ParsedConfigurationNonPrimitives
@@ -135,14 +133,22 @@ export class ConfigurationParser implements ConfigurationParserLike {
 
       return {
         url: page.url,
-        selectors: page.selectors.map((selector) =>
-          Object.assign(
-            selector,
-            "first" in selector
-              ? { first: _combineIntoString(selector.first) }
-              : { all: _combineIntoString(selector.all) }
+        selectors: page.selectors
+          .filter(
+            (selector) =>
+              selector.all !== undefined || selector.first !== undefined
           )
-        ),
+          .map((selector) =>
+            Object.assign(
+              selector,
+              (() => {
+                if ("first" in selector && selector.first !== undefined)
+                  return { first: _combineIntoString(selector.first) };
+                if ("all" in selector && selector.all !== undefined)
+                  return { all: _combineIntoString(selector.all) };
+              })()
+            )
+          ),
       };
     });
 
@@ -179,10 +185,22 @@ export class ConfigurationParser implements ConfigurationParserLike {
               selectors: z.array(
                 z.intersection(
                   z.object({ name: z.string().min(1).optional() }),
-                  z.union([
-                    z.object({ first: selectorSchema }),
-                    z.object({ all: selectorSchema }),
-                  ])
+                  z
+                    .object({
+                      first: selectorSchema,
+                      all: selectorSchema,
+                    })
+                    .partial()
+                    .refine(
+                      (selector) =>
+                        ("first" in selector && selector.first !== undefined) ||
+                        ("all" in selector && selector.all !== undefined),
+                      "If you define selector `first` or `all` must be set"
+                    )
+                    .refine(
+                      (selector) => !("first" in selector && "all" in selector),
+                      "You can't have both `first` and `all`"
+                    )
                 )
               ),
             }),

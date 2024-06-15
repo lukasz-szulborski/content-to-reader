@@ -1,0 +1,6 @@
+output: "./news.epub"
+toDevice:
+  deviceEmail: "6fas7dgfasd766@kindle.amazon.com"
+  senderEmail: "email@gmail.com"
+pages:
+  - "https://ziglang.org/learn/overview/"

@@ -5,7 +5,7 @@ export const configValidationErrorToHumanReadable = (
 ): string => {
   const issue = (error as ZodError).issues[0];
 
-  if (!("unionErrors" in issue)) return "Unknown error";
+  if (!("unionErrors" in issue)) return error.toString();
 
   // Get last and deepest unionError
   const aux = (unionErrorObject: ZodError<any>[], acc: string): string => {

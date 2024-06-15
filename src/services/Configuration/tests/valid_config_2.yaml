@@ -1,0 +1,10 @@
+output: "./news.epub"
+pages:
+  - "https://techcrunch.com/2024/05/11/teslas-profitable-supercharger-network-in-limbo-after-musk-axed-entire-team/"
+  - url: "https://ziglang.org/learn/overview/"
+    selectors:
+      - name: "Header"
+        first: ".page-content header"
+      - name: "Content"
+        first:
+          ".page-content .contents": ["h1", "h2"]
