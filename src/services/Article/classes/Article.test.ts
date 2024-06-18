@@ -51,7 +51,7 @@ const COMMON_TESTS_FOR_PARSED_ARTICLE: [
 
 describe("Extracting article from HTML with Article class", () => {
   describe("Valid use", () => {
-    describe("Using semantic API", () => {
+    describe("Using `fromHtml` API", () => {
       let parsedArticle: ParsedArticle | null = null;
       let rawHtml = "";
 
@@ -60,7 +60,7 @@ describe("Extracting article from HTML with Article class", () => {
         const [[url, html]] = Object.entries(articleUrlHtmlMap);
         rawHtml = html;
         const article = new Article({ html, url });
-        parsedArticle = await article.fromSemanticHtml();
+        parsedArticle = await article.fromHtml();
       }, TIMEOUT);
 
       COMMON_TESTS_FOR_PARSED_ARTICLE.forEach(([name, fun]) =>
@@ -106,24 +106,25 @@ describe("Extracting article from HTML with Article class", () => {
     });
   });
   describe("Invalid use", () => {
-    describe("Using semantic API", () => {
+    describe("Using `fromHtml` API", () => {
       test("Invalid HTML passed", async () => {
         const article = new Article({
           html: EXAMPLE_BAD_HTML,
           url: "https://google.com",
         });
-        await expect(() => article.fromSemanticHtml()).rejects.toThrow(
+        await expect(() => article.fromHtml()).rejects.toThrow(
           /Invalid HTML snippet/
         );
       });
 
-      test("Parsing non-semantic page as semantic", async () => {
+      // @TODO: when heuristc is added then this shouldn't throw
+      test("Parsing non-semantic page using `fromHtml`", async () => {
         const articleUrlHtmlMap = await fetchHtml([
           EXAMPLE_NON_SEMANTIC_NEWS_URL,
         ]);
         const [[url, html]] = Object.entries(articleUrlHtmlMap);
         const article = new Article({ html, url });
-        await expect(() => article.fromSemanticHtml()).rejects.toThrow(
+        await expect(() => article.fromHtml()).rejects.toThrow(
           /No semantic <article> element found/
         );
       }, TIMEOUT);

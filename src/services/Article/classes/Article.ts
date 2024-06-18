@@ -8,9 +8,9 @@ export type ArticleContentSelector = {
 
 interface ArticleLike {
   /**
-   * Finds `<article>` element in a given HTML.
+   * Finds `<article>` element or uses heristics to find an article in a given HTML.
    */
-  fromSemanticHtml(): Promise<ParsedArticle>;
+  fromHtml(): Promise<ParsedArticle>;
   /**
    * Creates `ParsedArticle` by concatenating elements found using selectors.
    *
@@ -31,13 +31,7 @@ interface ArticleLikeConstructor {
 }
 
 /**
- * Extracts only the article contents from the whole HTML page.
- *
- * Currently works only for semantic HTML.
- * `<article>` element should contain the article.
- *
- *  @TODO
- * * **[In the future]** This class should allow more sophisticated methods of extracting article elements from HTML (besides the semantic html). It could allow selecting only vital article elements from the webpage.
+ * Extracts selected article contents from the whole HTML page.
  */
 export class Article implements ArticleLike {
   private _htmlSnippet: JSDOM;
@@ -54,10 +48,11 @@ export class Article implements ArticleLike {
     this._metadata = this.getArticleMetadata();
   }
 
-  async fromSemanticHtml(): Promise<ParsedArticle> {
+  async fromHtml(): Promise<ParsedArticle> {
     await this.validateHtmlSnippet();
     const articleElement =
       this._htmlSnippet.window.document.querySelector("article");
+    // @TODO: refactor when heuristics added
     if (articleElement === null) {
       throw new Error(`${this._url}: No semantic <article> element found.`);
     }
