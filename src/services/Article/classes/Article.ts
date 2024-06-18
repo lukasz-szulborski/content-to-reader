@@ -8,7 +8,7 @@ export type ArticleContentSelector = {
 
 interface ArticleLike {
   /**
-   * Finds `<article>` element or uses heristics to find an article in a given HTML.
+   * Finds `<article>` element or uses text-to-HTML ratio heristics to find an article in a given HTML.
    */
   fromHtml(): Promise<ParsedArticle>;
   /**
