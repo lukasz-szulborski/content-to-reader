@@ -196,7 +196,7 @@ export class ConfigurationParser implements ConfigurationParserLike {
                       (selector) =>
                         ("first" in selector && selector.first !== undefined) ||
                         ("all" in selector && selector.all !== undefined),
-                      "If you define selector `first` or `all` must be set"
+                      "If you define selector then `first` or `all` must be set"
                     )
                     .refine(
                       (selector) => !("first" in selector && "all" in selector),
