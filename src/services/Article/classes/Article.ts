@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { JSDOM, VirtualConsole } from "jsdom";
 import { ParsedArticle, ParsedArticleMetadata } from "@services/Article/types";
 import { isHtmlValid } from "@utils/isHtmlValid";
 
@@ -8,7 +8,7 @@ export type ArticleContentSelector = {
 
 interface ArticleLike {
   /**
-   * Finds `<article>` element or uses text-to-HTML ratio heristics to find an article in a given HTML.
+   * Finds `<article>` element or uses content-to-HTML ratio heristics to find an article in a given HTML.
    */
   fromHtml(): Promise<ParsedArticle>;
   /**
@@ -42,7 +42,9 @@ export class Article implements ArticleLike {
   constructor({ url, html }: ArticleLikeConstructor) {
     if (html.length === 0)
       throw new Error("You can't build Article off of empty HTML snippet.");
-    this._htmlSnippet = new JSDOM(html);
+    const virtualConsole = new VirtualConsole();
+    virtualConsole.on("error", () => {});
+    this._htmlSnippet = new JSDOM(html, { virtualConsole });
     this._rawHtmlSnippet = html;
     this._url = url;
     this._metadata = this.getArticleMetadata();
@@ -52,10 +54,14 @@ export class Article implements ArticleLike {
     await this.validateHtmlSnippet();
     const articleElement =
       this._htmlSnippet.window.document.querySelector("article");
+    
+    // @TODO: add content-to-html ratio algorithm for article search in non-semantic html
+
     // @TODO: refactor when heuristics added
     if (articleElement === null) {
       throw new Error(`${this._url}: No semantic <article> element found.`);
     }
+    
     return {
       htmlSnippet: articleElement.outerHTML,
       metadata: this._metadata,
