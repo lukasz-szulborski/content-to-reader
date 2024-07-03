@@ -95,7 +95,8 @@ export class ConfigurationParser implements ConfigurationParserLike {
   ): Configuration {
     const { output, pages, toDevice } = this.validateParsedObject(object);
 
-    const _combineIntoString = (
+    // Combines pages' selectors into string. String returned by this function is going to be used as query selector.
+    const _pageSelectorToString = (
       selector: SectionSelector,
       separator: string | undefined = ","
     ): string => {
@@ -143,9 +144,9 @@ export class ConfigurationParser implements ConfigurationParserLike {
               selector,
               (() => {
                 if ("first" in selector && selector.first !== undefined)
-                  return { first: _combineIntoString(selector.first) };
+                  return { first: _pageSelectorToString(selector.first) };
                 if ("all" in selector && selector.all !== undefined)
-                  return { all: _combineIntoString(selector.all) };
+                  return { all: _pageSelectorToString(selector.all) };
               })()
             )
           ),
