@@ -11,7 +11,7 @@ export type ConfigSelector = ({ name?: string } & (
   | { first: string }
   | { all: string }
 ))[];
-export type ConfigPage =
+export type PageConfig =
   | string
   | {
       url: string;
@@ -24,5 +24,5 @@ export interface Configuration {
     senderEmail: string;
     senderPassword: string;
   };
-  pages: ConfigPage[];
+  pages: PageConfig[];
 }
