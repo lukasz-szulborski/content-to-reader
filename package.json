@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@extractus/article-extractor": "^8.0.10",
+    "commander": "^12.1.0",
     "epub-gen-memory": "^1.0.10",
     "html-validate": "^8.18.2",
     "js-yaml": "^4.1.0",
