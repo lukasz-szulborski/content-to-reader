@@ -17,7 +17,7 @@ interface ArticleLike {
    *
    * Resulting HTML structure will be flat (no nesting of different selectors).
    */
-  fromSelectors(selectors: ArticleContentSelector[]): Promise<ParsedArticle>;
+  fromSelectors(selectors: ArticleContentSelector[]): ParsedArticle;
 }
 
 interface ArticleLikeConstructor {
@@ -88,9 +88,9 @@ export class Article implements ArticleLike {
     };
   }
 
-  async fromSelectors(
+  fromSelectors(
     selectors: ArticleContentSelector[]
-  ): Promise<ParsedArticle> {
+  ): ParsedArticle {
     const JOIN_TOKEN = "<br>\n";
     const htmlDocument = this._htmlSnippet.window.document;
     const snippets = selectors.map((selector, i) => {
