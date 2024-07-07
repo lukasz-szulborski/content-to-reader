@@ -1,6 +1,7 @@
 import { JSDOM, VirtualConsole } from "jsdom";
+import { extractFromHtml } from "@extractus/article-extractor";
+
 import { ParsedArticle, ParsedArticleMetadata } from "@services/Article/types";
-import { isHtmlValid } from "@utils/isHtmlValid";
 
 export type ArticleContentSelector = {
   name?: string;
@@ -51,19 +52,38 @@ export class Article implements ArticleLike {
   }
 
   async fromHtml(): Promise<ParsedArticle> {
-    await this.validateHtmlSnippet();
     const articleElement =
       this._htmlSnippet.window.document.querySelector("article");
-    
-    // @TODO: add content-to-html ratio algorithm for article search in non-semantic html
+    const foundSemanticHtml = articleElement !== null;
 
-    // @TODO: refactor when heuristics added
-    if (articleElement === null) {
-      throw new Error(`${this._url}: No semantic <article> element found.`);
+    // Content-to-html ratio algorithm for article extraction in non-semantic html
+    // Theoritical details of such an algo. are outlined here: doi 10.1145/2009916.2009952
+    const contentExtractionResult = await (async () => {
+      if (foundSemanticHtml) return null; // Short-circuit to avoid unnecessary computation
+
+      try {
+        return articleElement === null
+          ? (await extractFromHtml(this._rawHtmlSnippet, this._url))?.content
+          : null;
+      } catch {
+        return null;
+      }
+    })();
+
+    const foundNonSemanticContent = !!contentExtractionResult;
+
+    if (!foundSemanticHtml && !foundNonSemanticContent) {
+      throw new Error(
+        `<article> element not found nor could extract content. Please try using selectors API.`
+      );
     }
-    
+
+    const htmlSnippet = foundSemanticHtml
+      ? articleElement.outerHTML
+      : contentExtractionResult!;
+
     return {
-      htmlSnippet: articleElement.outerHTML,
+      htmlSnippet,
       metadata: this._metadata,
     };
   }
@@ -71,7 +91,6 @@ export class Article implements ArticleLike {
   async fromSelectors(
     selectors: ArticleContentSelector[]
   ): Promise<ParsedArticle> {
-    await this.validateHtmlSnippet();
     const JOIN_TOKEN = "<br>\n";
     const htmlDocument = this._htmlSnippet.window.document;
     const snippets = selectors.map((selector, i) => {
@@ -104,12 +123,5 @@ export class Article implements ArticleLike {
       title: this._htmlSnippet.window.document.title,
       url: this._url,
     };
-  }
-
-  private async validateHtmlSnippet(): Promise<void> {
-    const isValid = await isHtmlValid(this._rawHtmlSnippet);
-    if (!isValid) {
-      throw new Error(`${this._url}: Invalid HTML snippet`);
-    }
   }
 }

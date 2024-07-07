@@ -4,22 +4,24 @@
   "description": "CLI utility for Kindle owners. Just give it a bunch of articles' URLs and it will merge them into EPUB and send it to your reader.",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose true",
+    "test": "jest -c jest.config.js",
     "dev:watch": "nodemon src/index.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Darklaki/kindle-news-digest.git"
+    "url": "git+https://github.com/lukasz-szulborski/kindle-news-digest.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Darklaki/kindle-news-digest/issues"
+    "url": "https://github.com/lukasz-szulborski/kindle-news-digest/issues"
   },
-  "homepage": "https://github.com/Darklaki/kindle-news-digest#readme",
+  "homepage": "https://github.com/lukasz-szulborski/kindle-news-digest#readme",
   "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.1.1",
     "@types/jest": "^29.5.12",
@@ -29,17 +31,20 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": ">=7.0.2",
     "@typescript-eslint/parser": ">=7.0.2",
+    "babel-jest": "^29.7.0",
     "eslint": "^9.1.1",
     "eslint-config-xo-typescript": "^4.0.0",
     "globals": "^15.0.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.0",
-    "ts-jest": "^29.1.2",
+    "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.16.2",
     "typescript": ">=5.0.0"
   },
   "dependencies": {
+    "@extractus/article-extractor": "^8.0.10",
     "epub-gen-memory": "^1.0.10",
     "html-validate": "^8.18.2",
     "js-yaml": "^4.1.0",

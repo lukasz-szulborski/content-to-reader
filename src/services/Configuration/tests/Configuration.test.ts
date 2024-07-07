@@ -40,28 +40,28 @@ describe("Parsing configuration files with ConfigurationParser", () => {
 
     describe("parsing page with selectors", () => {
       test("has valid url", () => {
-        const page = config!.pages.at(2)!;
+        const page = config!.pages.at(3)!;
         if (typeof page === "string") return expect(false).toBe(true);
 
         expect(page.url === "https://ziglang.org/learn/overview/");
       });
 
       test("has 3 selectors", () => {
-        const page = config!.pages.at(2)!;
+        const page = config!.pages.at(3)!;
         if (typeof page === "string") return expect(false).toBe(true);
 
         expect(page.selectors.length).toBe(3);
       });
 
       test("second selector has name 'Content'", () => {
-        const page = config!.pages.at(2)!;
+        const page = config!.pages.at(3)!;
         if (typeof page === "string") return expect(false).toBe(true);
 
         expect(page.selectors.at(1)!.name).toBe("Content");
       });
 
       test("class names unfolding", () => {
-        const page = config!.pages.at(2)!;
+        const page = config!.pages.at(3)!;
         if (typeof page === "string") return expect(false).toBe(true);
 
         const selector = page.selectors.at(1)!;
@@ -74,7 +74,7 @@ describe("Parsing configuration files with ConfigurationParser", () => {
       });
 
       test("selector without a name is still valid", () => {
-        const page = config!.pages.at(2)!;
+        const page = config!.pages.at(3)!;
         if (typeof page === "string") return expect(false).toBe(true);
 
         const selector = page.selectors.at(2)!;
@@ -128,7 +128,7 @@ describe("Parsing configuration files with ConfigurationParser", () => {
         path: "./src/services/Configuration/tests/invalid_config_3.yaml",
       });
       await expect(() => configParser.get()).rejects.toThrow(
-        /If you define selector `first` or `all` must be set/
+        /If you define selector then `first` or `all` must be set/
       );
     });
 

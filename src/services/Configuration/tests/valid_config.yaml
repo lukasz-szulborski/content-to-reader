@@ -5,6 +5,7 @@ toDevice:
   senderPassword: "password123"
 pages:
   - "https://techcrunch.com/2024/05/11/teslas-profitable-supercharger-network-in-limbo-after-musk-axed-entire-team/"
+  - "https://react.dev/learn/you-might-not-need-an-effect"
   - "https://finearttutorials.com/guide/a-complete-list-of-oil-painting-techniques"
   - url: "https://ziglang.org/learn/overview/"
     selectors:

@@ -66,6 +66,19 @@ describe("Extracting article from HTML with Article class", () => {
       COMMON_TESTS_FOR_PARSED_ARTICLE.forEach(([name, fun]) =>
         test(name, () => fun(parsedArticle!, { rawHtml }))
       );
+
+      test(
+        "Parsing non-semantic page using `fromHtml`",
+        async () => {
+          const articleUrlHtmlMap = await fetchHtml([
+            EXAMPLE_NON_SEMANTIC_NEWS_URL,
+          ]);
+          const [[url, html]] = Object.entries(articleUrlHtmlMap);
+          const article = new Article({ html, url });
+          await expect(article.fromHtml()).resolves.toBeDefined();
+        },
+        TIMEOUT
+      );
     });
 
     describe("Using selectors API", () => {
@@ -112,22 +125,8 @@ describe("Extracting article from HTML with Article class", () => {
           html: EXAMPLE_BAD_HTML,
           url: "https://google.com",
         });
-        await expect(() => article.fromHtml()).rejects.toThrow(
-          /Invalid HTML snippet/
-        );
+        await expect(() => article.fromHtml()).rejects.toThrow();
       });
-
-      // @TODO: when heuristc is added then this shouldn't throw
-      test("Parsing non-semantic page using `fromHtml`", async () => {
-        const articleUrlHtmlMap = await fetchHtml([
-          EXAMPLE_NON_SEMANTIC_NEWS_URL,
-        ]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
-        const article = new Article({ html, url });
-        await expect(() => article.fromHtml()).rejects.toThrow(
-          /No semantic <article> element found/
-        );
-      }, TIMEOUT);
     });
 
     describe("Using selectors API", () => {
