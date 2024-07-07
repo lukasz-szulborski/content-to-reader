@@ -1,9 +1,9 @@
 import { Command } from "commander";
 
 import { ConfigurationParser } from "@services/Configuration";
-import { fetchHtml } from "@utils/fetchHtml";
 import { Article } from "@services/Article";
 import { ReaderFileBuilder } from "@services/ReaderFileBuilder";
+import { fetchHtml } from "@utils/fetchHtml";
 
 const program = new Command();
 
