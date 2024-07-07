@@ -1,4 +1,4 @@
-# kindle-news-digest
+# content-to-reader
 
 # How to install and use
 

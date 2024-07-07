@@ -1,7 +1,7 @@
 {
-  "name": "kindle-news-digest",
+  "name": "content-to-reader",
   "version": "0.0.1",
-  "description": "CLI utility for Kindle owners. Just give it a bunch of articles' URLs and it will merge them into EPUB and send it to your reader.",
+  "description": "CLI utility for owners of ebook readers. Just give it a bunch of articles' URLs and it will merge them into an EPUB.",
   "main": "index.js",
   "scripts": {
     "test": "jest -c jest.config.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lukasz-szulborski/kindle-news-digest.git"
+    "url": "git+https://github.com/lukasz-szulborski/content-to-reader.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/lukasz-szulborski/kindle-news-digest/issues"
+    "url": "https://github.com/lukasz-szulborski/content-to-reader/issues"
   },
-  "homepage": "https://github.com/lukasz-szulborski/kindle-news-digest#readme",
+  "homepage": "https://github.com/lukasz-szulborski/content-to-reader#readme",
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
