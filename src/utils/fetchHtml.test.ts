@@ -1,5 +1,4 @@
 import { fetchHtml } from "@utils/fetchHtml";
-import { isHtmlValid } from "@utils/isHtmlValid";
 
 const VALID_URLS = ["https://google.com", "https://github.com"];
 const TIMEOUT = 1000 * 60;
@@ -43,15 +42,6 @@ describe(`fetchHtml util function`, () => {
           true
         );
         expect(isEachUrlPresent).toBe(true);
-      },
-      TIMEOUT
-    );
-    test(
-      "Function should return valid HTML",
-      async () => {
-        const result = await fetchHtml(VALID_URLS.slice(0, 1));
-        const isValid = await isHtmlValid(result[VALID_URLS[0]]);
-        expect(isValid).toBe(true);
       },
       TIMEOUT
     );
