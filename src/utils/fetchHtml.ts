@@ -7,7 +7,8 @@ import { Cluster } from "puppeteer-cluster";
  * If you pass an empty array it will return an empty object.
  * */
 export const fetchHtml = async (
-  urls: string[]
+  urls: string[],
+  successCallback?: (url: string) => void
 ): Promise<Record<string, string>> => {
   if (urls.length === 0) return {};
 
@@ -34,6 +35,7 @@ export const fetchHtml = async (
         retryUrls.push(url);
       } else {
         results[url] = await httpRes?.text();
+        if (successCallback) successCallback(url);
       }
     } catch (error) {
       errors[url] = (error as any).toString();
@@ -55,10 +57,13 @@ export const fetchHtml = async (
 
   const retryResults = await Promise.all(
     retryUrls.map((url) =>
-      fetch(url).then(async (response) => ({
-        url,
-        html: await response.text(),
-      }))
+      fetch(url).then(async (response) => {
+        if (successCallback) successCallback(url);
+        return {
+          url,
+          html: await response.text(),
+        };
+      })
     )
   );
   const mergedRetryResults = retryResults.reduce(
