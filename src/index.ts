@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
+import chalk from "chalk";
 
 import { ConfigurationParser } from "@services/Configuration";
 import { Article } from "@services/Article";
@@ -25,10 +26,12 @@ program
   )
   .option("-c, --config [string]", "config file path")
   .action(async (url: string | undefined, options) => {
+    console.log(`${chalk.blue.bold("Started...")}`);
     const fromUrl = url !== undefined && url.length > 0;
 
     const config = await (async () => {
       if (!options.config) return null;
+      console.log(`${chalk.blue.bold("Parsing config...")}`);
       try {
         const parser = new ConfigurationParser({
           path: options.config,
@@ -44,25 +47,32 @@ program
       : options.output;
 
     if (outputPath === undefined) {
-      throw new Error("outputPath === undefined");
+      console.log(chalk.bold.red("outputPath === undefined"));
+      return;
     }
 
     // Check if no URLs provided
     if (fromUrl === false && (config === null || config.pages.length === 0)) {
-      throw new Error(
-        "No pages provided. Use configuration file or pass a single URL as the first argument."
+      console.log(
+        chalk.bold.red(
+          "No pages provided. Use configuration file or pass a single URL as the first argument."
+        )
       );
+      return;
     }
 
     // Fetch HTML
+    console.log(`${chalk.blue.bold("Fetching pages...")}`);
     const fetched = await fetchHtml(
       config
         ? config.pages.map((page) =>
             typeof page === "string" ? page : page.url
           )
-        : [url!]
+        : [url!],
+      (url) => console.log(`${chalk.blue.bold("Fetched")} ${url}`)
     );
 
+    console.log(`${chalk.blue.bold("Parsing pages...")}`);
     const parseArticlesJob = Object.entries(fetched).map(([url, html]) => {
       const article = new Article({ html, url });
 
@@ -92,14 +102,20 @@ program
           })
         : null;
 
-      return selectors ? article.fromSelectors(selectors) : article.fromHtml();
+      const result = selectors
+        ? article.fromSelectors(selectors)
+        : article.fromHtml();
+      console.log(`${chalk.blue.bold("Parsed")} ${url}`);
+      return result;
     });
 
     const parsedArticles = await Promise.all(parseArticlesJob);
 
+    console.log(`${chalk.blue.bold("Building EPUB...")}`);
     const builder = new ReaderFileBuilder();
     const file = await builder.build(parsedArticles);
 
+    console.log(`${chalk.blue.bold("Saving on disk...")}`);
     try {
       await file.save(outputPath);
     } catch (error) {
@@ -110,8 +126,10 @@ program
     // @TODO: email send (fix amazon not accepting first)
     // ...
 
+    console.log(`${chalk.blue.bold("Cleanup...")}`);
     await file.cleanup();
-  });
 
+    console.log(`${chalk.green.bold("Finished successfully!")}`);
+  });
 
 program.parseAsync();
