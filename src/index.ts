@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Command } from "commander";
 
 import { ConfigurationParser } from "@services/Configuration";
@@ -105,9 +107,11 @@ program
       throw error;
     }
 
-    // @TODO: email send?
+    // @TODO: email send (fix amazon not accepting first)
+    // ...
 
     await file.cleanup();
   });
 
-program.parse();
+
+program.parseAsync();
