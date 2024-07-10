@@ -7,7 +7,7 @@
     "test": "jest -c jest.config.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "build": "build -c ./webpack.config.js"
+    "build": "webpack build -c ./webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@extractus/article-extractor": "^8.0.10",
+    "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "epub-gen-memory": "^1.0.10",
     "html-validate": "^8.18.2",
