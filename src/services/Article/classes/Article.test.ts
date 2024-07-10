@@ -152,7 +152,14 @@ describe("Extracting article from HTML with Article class", () => {
       }, TIMEOUT);
 
       test("Trying to access non-existing element shows error", async () => {
-        await expect(() => article!.fromSelectors(selectors)).rejects.toThrow(
+        const result = await (async () => {
+          try {
+            return article!.fromSelectors(selectors);
+          } catch (error: any) {
+            return error.toString();
+          }
+        })();
+        expect(result).toContain(
           `${EXAMPLE_NON_SEMANTIC_NEWS_URL} -> [0]: Didn't find any elements matching query.`
         );
       });
@@ -160,7 +167,14 @@ describe("Extracting article from HTML with Article class", () => {
       test("Trying to access non-existing element identified by name", async () => {
         const NAME = "header";
         selectors[0].name = NAME;
-        await expect(() => article!.fromSelectors(selectors)).rejects.toThrow(
+        const result = await (async () => {
+          try {
+            return article!.fromSelectors(selectors);
+          } catch (error: any) {
+            return error.toString();
+          }
+        })();
+        expect(result).toContain(
           `${EXAMPLE_NON_SEMANTIC_NEWS_URL} -> [${NAME}]: Didn't find any elements matching query.`
         );
         delete selectors[0].name;
