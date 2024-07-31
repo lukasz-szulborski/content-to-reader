@@ -50,12 +50,15 @@ export class ReaderFileBuilder implements ReaderFileBuilderLike {
     const epubBuffer = await epubGen(
       {
         title: `${todaysDateString} News Digest`,
-        author: "kindle-news-digest",
-        prependChapterTitles: true,
+        author: "content-to-reader",
+        publisher: "content-to-reader",
+        cover: "https://i.ibb.co/P67DvHY/covertest.jpg",
+        version: 3,
+        ignoreFailedDownloads: true,
       },
       htmlSnippets.map((article) => ({
         content: article.htmlSnippet,
-        title: article.metadata.title,
+        title: article.metadata.title.replace("'", "").replace("`", ""),
       }))
     );
 
