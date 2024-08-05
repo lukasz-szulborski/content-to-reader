@@ -2,6 +2,9 @@
 
 import { Command } from "commander";
 import chalk from "chalk";
+//@ts-ignore
+import { SMTPChannel } from "smtp-channel"; // Deals with maintaining TCP sockets nicely
+import { v4 as uuid } from "uuid";
 
 import { ConfigurationParser } from "@services/Configuration";
 import { Article } from "@services/Article";
@@ -47,7 +50,11 @@ program
       : options.output;
 
     if (outputPath === undefined) {
-      console.log(chalk.bold.red("outputPath === undefined"));
+      console.log(
+        chalk.bold.red(
+          "Couldn't determine output path. Use either -o option or a configuration file."
+        )
+      );
       return;
     }
 
@@ -116,17 +123,83 @@ program
     const file = await builder.build(parsedArticles);
 
     console.log(`${chalk.blue.bold("Saving on disk...")}`);
-    try {
-      await file.save(outputPath);
-    } catch (error) {
-      await file.cleanup();
-      throw error;
+    const savedFileBuffer = (async () => {
+      try {
+        return await file.save(outputPath);
+      } catch (error) {
+        await file.cleanup();
+        throw error;
+      }
+    })();
+
+    // Send email
+    /*
+      I know this is probably going to bite me in the ass but I couldn't
+      find any email library that allows that level of freedom and
+      Amazon expects emails to be formatted in a certain way. 
+
+      Nodemailer for example failed to attach binariesin a way that's
+      understadable by Amazon
+    */
+    if (config?.toDevice) {
+      console.log(`${chalk.blue.bold("Sending an email...")}`);
+
+      const now = new Date();
+      const padDateMonth = (n: number) => n.toString().padStart(2, "0");
+      const todaysDateString = `${now.getFullYear()}-${padDateMonth(
+        now.getMonth() + 1
+      )}-${padDateMonth(now.getDate())}`;
+      const attachmentName = `${todaysDateString} news.epub`;
+
+      const { deviceEmail, senderEmail, senderPassword } = config.toDevice;
+
+      await (async function () {
+        const smtp = new SMTPChannel({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+        });
+
+        await smtp.connect({ timeout: 3000 });
+        await smtp.write("EHLO smtp.gmail.com\r\n");
+
+        const base64Username = Buffer.from(senderEmail).toString("base64");
+        const base64Password = Buffer.from(senderPassword).toString("base64");
+
+        await smtp.write("AUTH LOGIN\r\n");
+        await smtp.write(`${base64Username}\r\n`);
+        await smtp.write(`${base64Password}\r\n`);
+
+        await smtp.write(`MAIL FROM:<${senderEmail}>\r\n`);
+        await smtp.write(`RCPT TO:<${deviceEmail}>\r\n`);
+        await smtp.write(`DATA\r\n`);
+        const attachmentId = uuid();
+        const dataLines: string[] = [
+          "MIME-Version: 1.0",
+          "Subject: Your Subject",
+          `From: <${senderEmail}>`,
+          `X-Universally-Unique-Identifier: ${uuid()}`,
+          `To: ${deviceEmail}`,
+          'Content-Type: multipart/mixed; boundary="boundary123"',
+          "--boundary123",
+          `Content-Type: application/epub+zip; name="${attachmentName}"`,
+          `Content-Disposition: attachment; filename="${attachmentName}"`,
+          "Content-Transfer-Encoding: base64",
+          `X-Attachment-Id: ${attachmentId}`,
+          `Content-ID: <${attachmentId}>`,
+          "",
+          (await savedFileBuffer).toString("base64"),
+          "--boundary123--",
+        ];
+        dataLines.forEach(async (line) => await smtp.write(`${line}\r\n`));
+        await smtp.write("\r\n.\r\n");
+
+        await smtp.write("QUIT\r\n");
+      })();
     }
 
-    // @TODO: email send (fix amazon not accepting first)
-    // ...
-
     console.log(`${chalk.blue.bold("Cleanup...")}`);
+    await savedFileBuffer;
     await file.cleanup();
 
     console.log(`${chalk.green.bold("Finished successfully!")}`);
