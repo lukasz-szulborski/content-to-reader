@@ -132,3 +132,4 @@ dist
 playground.ts
 
 .DS_Store
+*.epub
