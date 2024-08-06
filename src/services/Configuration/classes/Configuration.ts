@@ -168,48 +168,59 @@ export class ConfigurationParser implements ConfigurationParserLike {
       z.string().min(1),
       z.record(z.array(z.lazy(() => selectorSchema))),
     ]);
-    const configurationSchema = z.object({
-      output: z.string().min(1),
-      toDevice: z
-        .object({
-          deviceEmail: z.string().email(),
-          senderEmail: z.string().email(),
-          senderPassword: z.string().min(1),
-        })
-        .optional(),
-      pages: z
-        .array(
-          z.union([
-            z.string().min(1),
-            z.object({
-              url: z.string().min(1),
-              selectors: z.array(
-                z.intersection(
-                  z.object({ name: z.string().min(1).optional() }),
-                  z
-                    .object({
-                      first: selectorSchema,
-                      all: selectorSchema,
-                    })
-                    .partial()
-                    .refine(
-                      (selector) =>
-                        ("first" in selector && selector.first !== undefined) ||
-                        ("all" in selector && selector.all !== undefined),
-                      "If you define selector then `first` or `all` must be set"
-                    )
-                    .refine(
-                      (selector) => !("first" in selector && "all" in selector),
-                      "You can't have both `first` and `all`"
-                    )
-                )
-              ),
-            }),
-          ])
-        )
-        .nonempty()
-        .min(1),
-    });
+    const configurationSchema = z
+      .object({
+        output: z.string().min(1).optional(),
+        toDevice: z
+          .object({
+            deviceEmail: z.string().email(),
+            senderEmail: z.string().email(),
+            senderPassword: z.string().min(1),
+          })
+          .optional(),
+        pages: z
+          .array(
+            z.union([
+              z.string().min(1),
+              z.object({
+                url: z.string().min(1),
+                selectors: z.array(
+                  z.intersection(
+                    z.object({ name: z.string().min(1).optional() }),
+                    z
+                      .object({
+                        first: selectorSchema,
+                        all: selectorSchema,
+                      })
+                      .partial()
+                      .refine(
+                        (selector) =>
+                          ("first" in selector &&
+                            selector.first !== undefined) ||
+                          ("all" in selector && selector.all !== undefined),
+                        "If you define selector then `first` or `all` must be set"
+                      )
+                      .refine(
+                        (selector) =>
+                          !("first" in selector && "all" in selector),
+                        "You can't have both `first` and `all`"
+                      )
+                  )
+                ),
+              }),
+            ])
+          )
+          .nonempty()
+          .min(1),
+      })
+      .refine(
+        ({ output, toDevice }) =>
+          output !== undefined || toDevice !== undefined,
+        {
+          message:
+            "You must provide either 'output' or 'toDevice' paramter in your configuration.",
+        }
+      );
     try {
       return configurationSchema.parse(object);
     } catch (error) {

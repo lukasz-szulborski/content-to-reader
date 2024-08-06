@@ -14,7 +14,7 @@ export type PageConfig =
       selectors: ({ name?: string } & ({ first: string } | { all: string }))[];
     };
 export interface Configuration {
-  output: string;
+  output?: string;
   toDevice?: {
     deviceEmail: string;
     senderEmail: string;

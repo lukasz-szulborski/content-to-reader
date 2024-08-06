@@ -149,5 +149,14 @@ describe("Parsing configuration files with ConfigurationParser", () => {
         /pages -> 0 -> selectors -> 1/
       );
     });
+
+    test("configuration must provide either 'output' or 'toDevice' parameter", async () => {
+      const configParser = new ConfigurationParser({
+        path: "./src/services/Configuration/tests/invalid_config_6.yaml",
+      });
+      await expect(() => configParser.get()).rejects.toThrow(
+        /You must provide either 'output' or 'toDevice' paramter in your configuration./
+      );
+    });
   });
 });

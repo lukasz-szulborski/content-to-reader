@@ -135,11 +135,11 @@ program
     // Send email
     /*
       I know this is probably going to bite me in the ass but I couldn't
-      find any email library that allows that level of freedom and
+      find any email library that allows this level of flexibility and
       Amazon expects emails to be formatted in a certain way. 
 
-      Nodemailer for example failed to attach binariesin a way that's
-      understadable by Amazon
+      Nodemailer for example failed to attach binaries in a way that's
+      understandable by Amazon's "Send to device".
     */
     if (config?.toDevice) {
       console.log(`${chalk.blue.bold("Sending an email...")}`);
