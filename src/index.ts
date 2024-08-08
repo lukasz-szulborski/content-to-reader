@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/**
+ * content-to-reader
+ * Author: Łukasz Szulborski, 2024
+ * License: https://github.com/lukasz-szulborski/content-to-reader/blob/main/LICENSE.md
+ */
+
 import { Command } from "commander";
 import chalk from "chalk";
 //@ts-ignore
