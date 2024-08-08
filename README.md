@@ -32,6 +32,7 @@ content-to-reader create -c ./config.yaml
 ```
 
 4. Enjoy your articles
+![content-to-reader](./readme/demo.jpeg)
 
 **If you run into any issues refer to [FAQ](#faq) section below.**
 

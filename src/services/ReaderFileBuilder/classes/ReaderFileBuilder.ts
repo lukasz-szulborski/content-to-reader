@@ -52,7 +52,8 @@ export class ReaderFileBuilder implements ReaderFileBuilderLike {
         title: `${todaysDateString} News Digest`,
         author: "content-to-reader",
         publisher: "content-to-reader",
-        cover: "https://i.ibb.co/P67DvHY/covertest.jpg", // @TODO: change
+        cover:
+          "https://lukasz-szulborski.github.io/content-to-reader/assets/covertest.jpeg",
         version: 3,
         ignoreFailedDownloads: true,
       },
