@@ -11,7 +11,7 @@ Extract meaningful content from any website and turn it into an EPUB file. Send 
 npm i content-to-reader -g
 ```
 
-2. Create a config file in a `.yaml` format
+2. Create a config file in a `.yaml` format. You can either create an output file and/or send it to your device using Gmail account.
 
 ```yaml
 # config.yaml
@@ -32,7 +32,7 @@ content-to-reader create -c ./config.yaml
 ```
 
 4. Enjoy your articles
-![content-to-reader](./readme/demo.jpeg)
+   ![content-to-reader](./readme/demo.jpeg)
 
 **If you run into any issues refer to [FAQ](#faq) section below.**
 
@@ -145,6 +145,7 @@ Currently there is no way to change this behaviour.
 </details>
 
 # License
+
 Licensed under The Prosperity Public License 3.0.0.
 
 <!--  -->
