@@ -1,6 +1,6 @@
 {
   "name": "content-to-reader",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI utility for moving content from web to EPUBs. Just give it a bunch of URLs and it will extract content and merge it into an EPUB.",
   "main": "dist/index.js",
   "scripts": {
