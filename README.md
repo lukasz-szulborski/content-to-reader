@@ -125,8 +125,10 @@ Sometimes Amazon just rejects a file for whatever reason. You can use Calibre as
 
 </details>
 <details>
-  <summary>Gmail isn't working</summary>
-    You can't use your regular Gmail password. [Create application password for your Gmail account](https://support.google.com/mail/answer/185833?hl=en) so you can use it in `.yaml` config file.
+  <summary>Email isn't working -- EPIPE error</summary>
+This error occurs when you didn't set valid email and password for your Gmail account.
+
+You can't use your regular Gmail password. Create application password for your Gmail account here: https://support.google.com/mail/answer/185833?hl=en. Now you can use it in `.yaml` config file.
 
 </details>
 <details>
