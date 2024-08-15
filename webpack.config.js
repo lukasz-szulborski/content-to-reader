@@ -1,5 +1,6 @@
 const path = require("path");
-const TerserPlugin = require('terser-webpack-plugin')
+const TerserPlugin = require("terser-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = {
   entry: "./src/index.ts",
@@ -37,6 +38,9 @@ module.exports = {
     ],
   },
   target: "node",
+  plugins: [
+    new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true }),
+  ],
   optimization: {
     minimize: true,
     minimizer: [
