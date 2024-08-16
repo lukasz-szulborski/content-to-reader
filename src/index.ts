@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+process.removeAllListeners('warning')
 
 /**
  * content-to-reader
