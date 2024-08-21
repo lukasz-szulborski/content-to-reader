@@ -1,3 +1,2 @@
-output: './book.epub'
 pages:
   - "https://ziglang.org/learn/overview/"
