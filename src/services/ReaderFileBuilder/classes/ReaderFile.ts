@@ -2,6 +2,7 @@ import { accessSync, constants } from "node:fs";
 import asyncFs from "node:fs/promises";
 
 import { FileReaderBinaryFormat } from "@typings/common";
+import { CommitReaderFileError } from "@errors/CommitReaderFileError";
 
 interface ReaderFileConstructor {
   /**
@@ -61,13 +62,21 @@ export class ReaderFile implements ReaderFileLike {
 
   async save(destination: string): Promise<Buffer> {
     this.checkCleanup();
-    await asyncFs.copyFile(
-      this._temporaryPath,
-      destination,
-      asyncFs.constants.COPYFILE_EXCL
-    );
-    const newFile = await asyncFs.readFile(destination);
-    return newFile;
+    try {
+      await asyncFs.copyFile(
+        this._temporaryPath,
+        destination,
+        asyncFs.constants.COPYFILE_EXCL
+      );
+      const newFile = await asyncFs.readFile(destination);
+      return newFile;
+    } catch (error: unknown) {
+      throw new CommitReaderFileError(
+        error instanceof Error
+          ? error.message
+          : `Error during saving a file in ${destination}.`
+      );
+    }
   }
 
   async cleanup(): Promise<void> {

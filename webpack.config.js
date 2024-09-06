@@ -4,6 +4,8 @@ const webpack = require("webpack");
 
 module.exports = {
   entry: "./src/index.ts",
+  // mode: "production",
+  devtool: "inline-source-map",
   output: {
     filename: "index.js",
     path: path.resolve(__dirname, "dist"),
@@ -14,6 +16,7 @@ module.exports = {
       "@services": path.resolve(__dirname, "src/services/"),
       "@typings": path.resolve(__dirname, "src/types/"),
       "@utils": path.resolve(__dirname, "src/utils/"),
+      "@errors": path.resolve(__dirname, "src/errors/"),
     },
   },
   module: {
@@ -21,19 +24,7 @@ module.exports = {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude:
-          /node_modules\/(?!(bellajs|@extractus\/article-extractor)\/).*/,
-      },
-      {
-        test: /\.js$/,
-        exclude:
-          /node_modules\/(?!(bellajs|@extractus\/article-extractor)\/).*/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: ["@babel/preset-env"],
-          },
-        },
+        exclude: /node_modules\/.*/,
       },
     ],
   },

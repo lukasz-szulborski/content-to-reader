@@ -129,7 +129,9 @@ out
 .pnp.*
 
 playground.ts
+playground.js
 
 .DS_Store
 *.epub
 conf.yaml
+*.map

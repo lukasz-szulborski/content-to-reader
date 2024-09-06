@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-process.removeAllListeners('warning')
 
 /**
  * content-to-reader
@@ -8,7 +7,6 @@ process.removeAllListeners('warning')
  */
 
 import { Command } from "commander";
-import chalk from "chalk";
 //@ts-ignore
 import { SMTPChannel } from "smtp-channel"; // Deals with maintaining TCP sockets nicely
 import { v4 as uuid } from "uuid";
@@ -17,6 +15,9 @@ import { ConfigurationParser } from "@services/Configuration";
 import { Article } from "@services/Article";
 import { ReaderFileBuilder } from "@services/ReaderFileBuilder";
 import { fetchHtml } from "@utils/fetchHtml";
+import { CommitReaderFileError } from "@errors/CommitReaderFileError";
+
+process.removeAllListeners("warning");
 
 const program = new Command();
 
@@ -36,6 +37,7 @@ program
   )
   .option("-c, --config [string]", "config file path")
   .action(async (url: string | undefined, options) => {
+    const chalk = (await import("chalk")).default;
     console.log(`${chalk.blue.bold("Started...")}`);
     const fromUrl = url !== undefined && url.length > 0;
 
@@ -135,9 +137,14 @@ program
         return await file.save(outputPath);
       } catch (error) {
         await file.cleanup();
-        throw error;
+        if (error instanceof CommitReaderFileError) {
+          console.log(chalk.bold.red(error.message));
+        }
       }
     })();
+
+    const savedReaderFileBuffer = await savedFileBuffer;
+    if (savedReaderFileBuffer === undefined) return;
 
     // Send email
     /*
@@ -149,64 +156,80 @@ program
       understandable by Amazon's "Send to device".
     */
     if (config?.toDevice) {
-      console.log(`${chalk.blue.bold("Sending an email...")}`);
+      try {
+        console.log(`${chalk.blue.bold("Sending an email...")}`);
 
-      const now = new Date();
-      const padDateMonth = (n: number) => n.toString().padStart(2, "0");
-      const todaysDateString = `${now.getFullYear()}-${padDateMonth(
-        now.getMonth() + 1
-      )}-${padDateMonth(now.getDate())}`;
-      const attachmentName = `${todaysDateString} news.epub`;
+        const now = new Date();
+        const padDateMonth = (n: number) => n.toString().padStart(2, "0");
+        const todaysDateString = `${now.getFullYear()}-${padDateMonth(
+          now.getMonth() + 1
+        )}-${padDateMonth(now.getDate())}`;
+        const attachmentName = `${todaysDateString} news.epub`;
 
-      const { deviceEmail, senderEmail, senderPassword } = config.toDevice;
+        const { deviceEmail, senderEmail, senderPassword } = config.toDevice;
 
-      await (async function () {
-        const smtp = new SMTPChannel({
-          host: "smtp.gmail.com",
-          port: 465,
-          secure: true,
+        await new Promise(async (resolve, reject) => {
+          const smtp = new SMTPChannel({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+          });
+
+          smtp.on("error", (err: unknown) => {
+            reject(err);
+          });
+          smtp.on("close", (...args: unknown[]) => {
+            resolve(args);
+          });
+
+          await smtp.connect({ timeout: 3000 });
+          await smtp.write("EHLO smtp.gmail.com\r\n");
+
+          const base64Username = Buffer.from(senderEmail).toString("base64");
+          const base64Password = Buffer.from(senderPassword).toString("base64");
+
+          await smtp.write("AUTH LOGIN\r\n");
+          await smtp.write(`${base64Username}\r\n`);
+          await smtp.write(`${base64Password}\r\n`);
+
+          await smtp.write(`MAIL FROM:<${senderEmail}>\r\n`);
+          await smtp.write(`RCPT TO:<${deviceEmail}>\r\n`);
+          await smtp.write(`DATA\r\n`);
+          const attachmentId = uuid();
+          const dataLines: string[] = [
+            "MIME-Version: 1.0",
+            "Subject: Your Subject",
+            `From: <${senderEmail}>`,
+            `X-Universally-Unique-Identifier: ${uuid()}`,
+            `To: ${deviceEmail}`,
+            'Content-Type: multipart/mixed; boundary="boundary123"',
+            "--boundary123",
+            `Content-Type: application/epub+zip; name="${attachmentName}"`,
+            `Content-Disposition: attachment; filename="${attachmentName}"`,
+            "Content-Transfer-Encoding: base64",
+            `X-Attachment-Id: ${attachmentId}`,
+            `Content-ID: <${attachmentId}>`,
+            "",
+            savedReaderFileBuffer.toString("base64"),
+            "--boundary123--",
+          ];
+          dataLines.forEach(async (line) => await smtp.write(`${line}\r\n`));
+          await smtp.write("\r\n.\r\n");
+
+          await smtp.write("QUIT\r\n");
         });
-
-        await smtp.connect({ timeout: 3000 });
-        await smtp.write("EHLO smtp.gmail.com\r\n");
-
-        const base64Username = Buffer.from(senderEmail).toString("base64");
-        const base64Password = Buffer.from(senderPassword).toString("base64");
-
-        await smtp.write("AUTH LOGIN\r\n");
-        await smtp.write(`${base64Username}\r\n`);
-        await smtp.write(`${base64Password}\r\n`);
-
-        await smtp.write(`MAIL FROM:<${senderEmail}>\r\n`);
-        await smtp.write(`RCPT TO:<${deviceEmail}>\r\n`);
-        await smtp.write(`DATA\r\n`);
-        const attachmentId = uuid();
-        const dataLines: string[] = [
-          "MIME-Version: 1.0",
-          "Subject: Your Subject",
-          `From: <${senderEmail}>`,
-          `X-Universally-Unique-Identifier: ${uuid()}`,
-          `To: ${deviceEmail}`,
-          'Content-Type: multipart/mixed; boundary="boundary123"',
-          "--boundary123",
-          `Content-Type: application/epub+zip; name="${attachmentName}"`,
-          `Content-Disposition: attachment; filename="${attachmentName}"`,
-          "Content-Transfer-Encoding: base64",
-          `X-Attachment-Id: ${attachmentId}`,
-          `Content-ID: <${attachmentId}>`,
-          "",
-          (await savedFileBuffer).toString("base64"),
-          "--boundary123--",
-        ];
-        dataLines.forEach(async (line) => await smtp.write(`${line}\r\n`));
-        await smtp.write("\r\n.\r\n");
-
-        await smtp.write("QUIT\r\n");
-      })();
+      } catch (error) {
+        console.log(
+          chalk.bold.red(
+            "Error during sending to device. Please double check your credentials and try again."
+          )
+        );
+        await file.cleanup();
+        return;
+      }
     }
 
     console.log(`${chalk.blue.bold("Cleanup...")}`);
-    await savedFileBuffer;
     await file.cleanup();
 
     console.log(`${chalk.green.bold("Finished successfully!")}`);
