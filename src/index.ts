@@ -58,7 +58,10 @@ program
       ? config.output
       : options.output;
 
-    if (outputPath === undefined) {
+    if (
+      outputPath === undefined &&
+      (config === null || config.toDevice === undefined)
+    ) {
       console.log(
         chalk.bold.red(
           "Couldn't determine output path. Use either -o option or a configuration file."
@@ -131,20 +134,20 @@ program
     const builder = new ReaderFileBuilder();
     const file = await builder.build(parsedArticles);
 
-    console.log(`${chalk.blue.bold("Saving on disk...")}`);
-    const savedFileBuffer = (async () => {
+    if (outputPath !== undefined) {
+      console.log(`${chalk.blue.bold("Saving on disk...")}`);
       try {
-        return await file.save(outputPath);
+        await file.save(outputPath);
       } catch (error) {
         await file.cleanup();
         if (error instanceof CommitReaderFileError) {
           console.log(chalk.bold.red(error.message));
+        } else {
+          throw error;
         }
+        return;
       }
-    })();
-
-    const savedReaderFileBuffer = await savedFileBuffer;
-    if (savedReaderFileBuffer === undefined) return;
+    }
 
     // Send email
     /*
@@ -210,7 +213,7 @@ program
             `X-Attachment-Id: ${attachmentId}`,
             `Content-ID: <${attachmentId}>`,
             "",
-            savedReaderFileBuffer.toString("base64"),
+            (await file.getBuff()).toString("base64"),
             "--boundary123--",
           ];
           dataLines.forEach(async (line) => await smtp.write(`${line}\r\n`));

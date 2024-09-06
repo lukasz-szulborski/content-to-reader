@@ -23,6 +23,12 @@ interface ReaderFileMethods {
    */
   save(destination: string): Promise<Buffer>;
   /**
+   * Get a buffer of the source e-book file.
+   *
+   * @returns Buffer of the temporary file
+   */
+  getBuff(): Promise<Buffer>;
+  /**
    * Removes all temporary files related to this `ReaderFile` so they aren't left hanging forever (including EPUB itself).
    *
    * Unfortunately JavaScript doesn't implement any notion of a destructor/finalizer
@@ -52,9 +58,7 @@ export class ReaderFile implements ReaderFileLike {
     // file path is valid and accessible.
     const fileAccessible = this.isTmpAccessibleSync(temporaryPath);
     if (!fileAccessible)
-      throw new Error(
-        `Fatal error. Node cannot access file at ${temporaryPath}.`
-      );
+      throw new Error(`Fatal error. Cannot access file at ${temporaryPath}.`);
 
     this._temporaryPath = temporaryPath;
     this._format = format;
@@ -77,6 +81,11 @@ export class ReaderFile implements ReaderFileLike {
           : `Error during saving a file in ${destination}.`
       );
     }
+  }
+
+  async getBuff(): Promise<Buffer> {
+    this.checkCleanup();
+    return await asyncFs.readFile(this._temporaryPath);
   }
 
   async cleanup(): Promise<void> {
