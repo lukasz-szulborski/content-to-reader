@@ -112,7 +112,7 @@ export class Article implements ArticleLike {
           }]: Didn't find any elements matching query.`
         );
       }
-      return "innerHTML" in queryResults
+      return "outerHTML" in queryResults
         ? queryResults.outerHTML
         : Array.from(queryResults)
             .map((elem) => elem.outerHTML)
