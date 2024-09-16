@@ -110,6 +110,7 @@ program
           : null;
 
       // Map config selectors so they can be understood by parser
+      //  @TODO: why do I need that? `ArticleContentSelector` should resemble user-facing config to avoid ambiguity.
       const selectors = configSelectors
         ? configSelectors.map((s) => {
             return Object.assign(
