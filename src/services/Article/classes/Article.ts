@@ -5,7 +5,7 @@ import { ParsedArticle, ParsedArticleMetadata } from "@services/Article/types";
 
 export type ArticleContentSelector = {
   name?: string;
-} & ({ querySelectorAll: string } | { querySelector: string });
+} & ({ all: string } | { first: string });
 
 interface ArticleLike {
   /**
@@ -101,10 +101,10 @@ export class Article implements ArticleLike {
     const JOIN_TOKEN = "<br>\n";
     const htmlDocument = this._htmlSnippet.window.document;
     const snippets = selectors.map((selector, i) => {
-      const isQuerySelector = "querySelector" in selector;
+      const isQuerySelector = "first" in selector;
       const queryResults = isQuerySelector
-        ? htmlDocument.querySelector(selector.querySelector)
-        : htmlDocument.querySelectorAll(selector.querySelectorAll);
+        ? htmlDocument.querySelector(selector.first)
+        : htmlDocument.querySelectorAll(selector.all);
       if (queryResults === null) {
         throw new Error(
           `${this._url} -> [${
