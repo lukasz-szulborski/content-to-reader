@@ -16,6 +16,8 @@ import { Article } from "@services/Article";
 import { ReaderFileBuilder } from "@services/ReaderFileBuilder";
 import { fetchHtml } from "@utils/fetchHtml";
 import { CommitReaderFileError } from "@errors/CommitReaderFileError";
+// import { PageConfigSelector } from "@services/Configuration/types";
+import { ParsedArticle } from "@services/Article/types";
 
 process.removeAllListeners("warning");
 
@@ -91,49 +93,70 @@ program
       (url) => console.log(`${chalk.blue.bold("Fetched")} ${url}`)
     );
 
+    // Save selector configuration for each URL
+    // It will help when we'll extract content from each article 
+    // const urlSelectorsMap: Record<string, PageConfigSelector[] | null> | null =
+    //   config
+    //     ? config.pages.reduce(
+    //         (acc, page) =>
+    //           typeof page === "string"
+    //             ? Object.assign(acc, { [page]: null })
+    //             : Object.assign(acc, { [page.url]: page.selectors }),
+    //         {}
+    //       )
+    //     : null;
+
     console.log(`${chalk.blue.bold("Parsing pages...")}`);
-    const parseArticlesJob = Object.entries(fetched).map(([url, html]) => {
-      const article = new Article({ html, url });
+    const parseArticlesJob = Object.entries(fetched).map(
+      async ([url, { html, order }]) => {
+        const article = new Article({ html, url });
 
-      if (!config) return article.fromHtml();
+        if (!config) return { result: await article.fromHtml(), order };
 
-      // Find config related to this URL and get selectors
-      const pageConfig = config.pages.find(
-        (page) =>
-          typeof page !== "string" &&
-          page.url === url &&
-          page.selectors.length > 0
-      );
-      const configSelectors =
-        pageConfig && typeof pageConfig !== "string"
-          ? pageConfig.selectors
+        // Find config related to this URL and get selectors
+        // @TODO: why do I need to find each time? this is O(n^2)
+        const pageConfig = config.pages.find(
+          (page) =>
+            typeof page !== "string" &&
+            page.url === url &&
+            page.selectors.length > 0
+        );
+        const configSelectors =
+          pageConfig && typeof pageConfig !== "string"
+            ? pageConfig.selectors
+            : null;
+
+        // Map config selectors so they can be understood by parser
+        //  @TODO: why do I need that? `ArticleContentSelector` should resemble user-facing config to avoid ambiguity.
+        const selectors = configSelectors
+          ? configSelectors.map((s) => {
+              return Object.assign(
+                { name: s.name },
+                "first" in s
+                  ? { querySelector: s.first }
+                  : { querySelectorAll: s.all }
+              );
+            })
           : null;
 
-      // Map config selectors so they can be understood by parser
-      //  @TODO: why do I need that? `ArticleContentSelector` should resemble user-facing config to avoid ambiguity.
-      const selectors = configSelectors
-        ? configSelectors.map((s) => {
-            return Object.assign(
-              { name: s.name },
-              "first" in s
-                ? { querySelector: s.first }
-                : { querySelectorAll: s.all }
-            );
-          })
-        : null;
-
-      const result = selectors
-        ? article.fromSelectors(selectors)
-        : article.fromHtml();
-      console.log(`${chalk.blue.bold("Parsed")} ${url}`);
-      return result;
-    });
+        const result = selectors
+          ? article.fromSelectors(selectors)
+          : article.fromHtml();
+        console.log(`${chalk.blue.bold("Parsed")} ${url}`);
+        return { result: await result, order };
+      }
+    );
 
     const parsedArticles = await Promise.all(parseArticlesJob);
 
     console.log(`${chalk.blue.bold("Building EPUB...")}`);
     const builder = new ReaderFileBuilder();
-    const file = await builder.build(parsedArticles);
+
+    // Sort parsed articles so ebook's ToC resembles initial url order
+    const sortedParsedArticles = parsedArticles
+      .sort((a, b) => a.order - b.order)
+      .reduce<ParsedArticle[]>((acc, x) => [...acc, x.result], []);
+    const file = await builder.build(sortedParsedArticles);
 
     if (outputPath !== undefined) {
       console.log(`${chalk.blue.bold("Saving on disk...")}`);
@@ -172,6 +195,7 @@ program
 
         const { deviceEmail, senderEmail, senderPassword } = config.toDevice;
 
+        // I send emails only from this place. No need to prematurely optimise
         await new Promise(async (resolve, reject) => {
           const smtp = new SMTPChannel({
             host: "smtp.gmail.com",

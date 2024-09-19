@@ -57,7 +57,7 @@ describe("Extracting article from HTML with Article class", () => {
 
       beforeAll(async () => {
         const articleUrlHtmlMap = await fetchHtml([SEMANTIC_NEWS_URL]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
+        const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
         rawHtml = html;
         const article = new Article({ html, url });
         parsedArticle = await article.fromHtml();
@@ -73,7 +73,7 @@ describe("Extracting article from HTML with Article class", () => {
           const articleUrlHtmlMap = await fetchHtml([
             EXAMPLE_NON_SEMANTIC_NEWS_URL,
           ]);
-          const [[url, html]] = Object.entries(articleUrlHtmlMap);
+          const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
           const article = new Article({ html, url });
           await expect(article.fromHtml()).resolves.toBeDefined();
         },
@@ -89,7 +89,7 @@ describe("Extracting article from HTML with Article class", () => {
         const articleUrlHtmlMap = await fetchHtml([
           EXAMPLE_NON_SEMANTIC_NEWS_URL,
         ]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
+        const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
         rawHtml = html;
         const article = new Article({ html, url });
         const selectors: ArticleContentSelector[] = [
@@ -147,7 +147,7 @@ describe("Extracting article from HTML with Article class", () => {
         const articleUrlHtmlMap = await fetchHtml([
           EXAMPLE_NON_SEMANTIC_NEWS_URL,
         ]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
+        const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
         article = new Article({ html, url });
       }, TIMEOUT);
 

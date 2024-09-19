@@ -1,5 +1,7 @@
 import { Cluster } from "puppeteer-cluster";
 
+type FetchHtmlResult = Record<string, { html: string; order: number }>;
+
 /**
  * Takes a set of urls, makes HTTP GET request, evaluates HTML
  * and returns HTML resulting from each url.
@@ -9,7 +11,7 @@ import { Cluster } from "puppeteer-cluster";
 export const fetchHtml = async (
   urls: string[],
   successCallback?: (url: string) => void
-): Promise<Record<string, string>> => {
+): Promise<FetchHtmlResult> => {
   if (urls.length === 0) return {};
 
   const cluster = await Cluster.launch({
@@ -18,23 +20,27 @@ export const fetchHtml = async (
     skipDuplicateUrls: true,
   });
 
-  const results: Record<string, string> = {};
+  const results: FetchHtmlResult = {};
   const errors: Record<string, string> = {};
   const retryUrls: string[] = [];
 
-  await cluster.task(async ({ page, data: url }) => {
+  await cluster.task(async ({ page, data }) => {
+    const [url, idx] = data;
     try {
       const httpRes = await page.goto(url);
       if (!httpRes || !httpRes.ok) {
         errors[url] = "error";
         return;
       }
-      // Sometimes browsers require verification. If that's the case then save this url for later and try fetching it the traditional way using `fetch`.
+      // Sometimes browsers require verification. If that's the case then save this url for later and try fetching it the traditional way using `fetch`. This is a workaround and doesn't allow for interpreting of redirected pages. Can be improved.
       if (httpRes?.request().redirectChain() ?? 0 > 0) {
         // @TODO: Can I fetch this url immediately after push?
         retryUrls.push(url);
       } else {
-        results[url] = await httpRes?.text();
+        results[url] = {
+          html: await httpRes?.text(),
+          order: idx,
+        };
         if (successCallback) successCallback(url);
       }
     } catch (error) {
@@ -42,11 +48,12 @@ export const fetchHtml = async (
     }
   });
 
-  urls.map((url) => cluster.queue(url));
+  urls.map((url, idx) => cluster.queue([url, idx]));
 
   await cluster.idle();
   await cluster.close();
 
+  // If cluster found any errors then throw them
   if (Object.entries(errors).length > 0) {
     throw new Error(
       Object.entries(errors)
@@ -55,21 +62,23 @@ export const fetchHtml = async (
     );
   }
 
-  const retryResults = await Promise.all(
-    retryUrls.map((url) =>
-      fetch(url).then(async (response) => {
-        if (successCallback) successCallback(url);
-        return {
-          url,
-          html: await response.text(),
-        };
-      })
+  // Re-try those that weren't fetched by puppeteer
+  const retryResults: FetchHtmlResult = (
+    await Promise.all(
+      retryUrls.map(
+        (url, idx): Promise<FetchHtmlResult> =>
+          fetch(url).then(async (response) => {
+            if (successCallback) successCallback(url);
+            return {
+              [url]: {
+                html: await response.text(),
+                order: idx,
+              },
+            };
+          })
+      )
     )
-  );
-  const mergedRetryResults = retryResults.reduce(
-    (acc, { html, url }) => Object.assign(acc, { [url]: html }),
-    {}
-  );
+  ).reduce((acc, result) => Object.assign(acc, result), {});
 
-  return Object.assign(results, mergedRetryResults);
+  return Object.assign(results, retryResults);
 };

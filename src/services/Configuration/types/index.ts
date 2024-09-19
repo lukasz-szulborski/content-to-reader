@@ -7,11 +7,15 @@ export type ParsedConfigurationNonPrimitives =
 
 // --- Types describing final configuration object
 export type SectionSelector = string | Record<string, SectionSelector[]>;
+export type PageConfigSelector = { name?: string } & (
+  | { first: string }
+  | { all: string }
+);
 export type PageConfig =
   | string
   | {
       url: string;
-      selectors: ({ name?: string } & ({ first: string } | { all: string }))[];
+      selectors: PageConfigSelector[];
     };
 export interface Configuration {
   output?: string;
