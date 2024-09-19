@@ -16,7 +16,7 @@ import { Article } from "@services/Article";
 import { ReaderFileBuilder } from "@services/ReaderFileBuilder";
 import { fetchHtml } from "@utils/fetchHtml";
 import { CommitReaderFileError } from "@errors/CommitReaderFileError";
-// import { PageConfigSelector } from "@services/Configuration/types";
+import { PageConfigSelector } from "@services/Configuration/types";
 import { ParsedArticle } from "@services/Article/types";
 
 process.removeAllListeners("warning");
@@ -94,53 +94,33 @@ program
     );
 
     // Save selector configuration for each URL
-    // It will help when we'll extract content from each article 
-    // const urlSelectorsMap: Record<string, PageConfigSelector[] | null> | null =
-    //   config
-    //     ? config.pages.reduce(
-    //         (acc, page) =>
-    //           typeof page === "string"
-    //             ? Object.assign(acc, { [page]: null })
-    //             : Object.assign(acc, { [page.url]: page.selectors }),
-    //         {}
-    //       )
-    //     : null;
+    // It will help when we'll extract content from each article
+    const urlSelectorsConfigurationMap: Record<
+      string,
+      PageConfigSelector[] | null
+    > | null = config
+      ? config.pages.reduce(
+          (acc, page) =>
+            typeof page === "string"
+              ? Object.assign(acc, { [page]: null })
+              : Object.assign(acc, { [page.url]: page.selectors }),
+          {}
+        )
+      : null;
 
     console.log(`${chalk.blue.bold("Parsing pages...")}`);
     const parseArticlesJob = Object.entries(fetched).map(
       async ([url, { html, order }]) => {
         const article = new Article({ html, url });
 
-        if (!config) return { result: await article.fromHtml(), order };
+        if (!config || !urlSelectorsConfigurationMap)
+          return { result: await article.fromHtml(), order };
 
         // Find config related to this URL and get selectors
-        // @TODO: why do I need to find each time? this is O(n^2)
-        const pageConfig = config.pages.find(
-          (page) =>
-            typeof page !== "string" &&
-            page.url === url &&
-            page.selectors.length > 0
-        );
-        const configSelectors =
-          pageConfig && typeof pageConfig !== "string"
-            ? pageConfig.selectors
-            : null;
+        const pageSelectorsConfig = urlSelectorsConfigurationMap[url];
 
-        // Map config selectors so they can be understood by parser
-        //  @TODO: why do I need that? `ArticleContentSelector` should resemble user-facing config to avoid ambiguity.
-        const selectors = configSelectors
-          ? configSelectors.map((s) => {
-              return Object.assign(
-                { name: s.name },
-                "first" in s
-                  ? { querySelector: s.first }
-                  : { querySelectorAll: s.all }
-              );
-            })
-          : null;
-
-        const result = selectors
-          ? article.fromSelectors(selectors)
+        const result = pageSelectorsConfig
+          ? article.fromSelectors(pageSelectorsConfig)
           : article.fromHtml();
         console.log(`${chalk.blue.bold("Parsed")} ${url}`);
         return { result: await result, order };
