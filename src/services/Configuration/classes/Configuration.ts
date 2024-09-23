@@ -10,6 +10,7 @@ import {
   SectionSelector,
 } from "@services/Configuration/types";
 import { configValidationErrorToHumanReadable } from "@utils/zodErrorToHumanReadable";
+import { ConfigurationError } from "@errors/ConfigurationError";
 
 interface ConfigurationParserLike {
   /**
@@ -43,7 +44,7 @@ export class ConfigurationParser implements ConfigurationParserLike {
     this._configFilePath = _path;
     const extension = path.extname(this._configFilePath);
     if (extension !== ".yaml") {
-      throw new Error("Unsupported configuration file type");
+      throw new ConfigurationError("Unsupported configuration file type");
     }
     this._extension = extension;
   }
@@ -56,7 +57,7 @@ export class ConfigurationParser implements ConfigurationParserLike {
       case ".yaml":
         return await this.parseYamlConfig(fileContent);
       default:
-        throw new Error("Unsupported configuration file type");
+        throw new ConfigurationError("Unsupported configuration file type");
     }
   }
 
@@ -65,7 +66,7 @@ export class ConfigurationParser implements ConfigurationParserLike {
       filename: this._configFilePath,
     }) as null | unknown | string | number | Record<string, unknown>;
     if (!result || typeof result === "string" || typeof result === "number") {
-      throw new Error(
+      throw new ConfigurationError(
         `${this._configFilePath}: Invalid configuration file. Please refer to documentation`
       );
     }
@@ -76,7 +77,7 @@ export class ConfigurationParser implements ConfigurationParserLike {
   }
 
   /**
-   * Validate parsed configuration and further interpret it.
+   * Validate parsed configuration schema and further interpret it.
    *
    * One of the steps is to generate nested selectors from `selectors` key:
    * @example
@@ -93,7 +94,9 @@ export class ConfigurationParser implements ConfigurationParserLike {
   private interpretConfigurationObject(
     object: ParsedConfigurationNonPrimitives
   ): Configuration {
-    const { output, pages, toDevice } = this.validateParsedObject(object);
+    const { output, pages, toDevice } = this.validateParsedObjectSchema(object);
+
+    // Check whether output follows
 
     // Combines pages' selectors into string. String returned by this function is going to be used as query selector.
     const _pageSelectorToString = (
@@ -161,9 +164,11 @@ export class ConfigurationParser implements ConfigurationParserLike {
   }
 
   /**
-   * Validate result of parsing configuration file.
+   * Validate if parsed configuration follows schema requirements.
+   *
+   * Check things like presence of required properties, their length.
    */
-  private validateParsedObject(object: ParsedConfigurationNonPrimitives) {
+  private validateParsedObjectSchema(object: ParsedConfigurationNonPrimitives) {
     const selectorSchema: z.ZodType<SectionSelector> = z.union([
       z.string().min(1),
       z.record(z.array(z.lazy(() => selectorSchema))),
@@ -224,7 +229,9 @@ export class ConfigurationParser implements ConfigurationParserLike {
     try {
       return configurationSchema.parse(object);
     } catch (error) {
-      throw new Error(configValidationErrorToHumanReadable(error as ZodError));
+      throw new ConfigurationError(
+        configValidationErrorToHumanReadable(error as ZodError)
+      );
     }
   }
 }
