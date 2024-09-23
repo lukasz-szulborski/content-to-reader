@@ -28,7 +28,7 @@ const program = new Command();
 program
   .name("content-to-reader")
   .description("CLI utility for creating EPUBs from WWW pages.")
-  .version("0.0.2");
+  .version(version);
 
 program
   .command("create")
