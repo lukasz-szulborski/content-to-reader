@@ -17,6 +17,7 @@ module.exports = {
       "@typings": path.resolve(__dirname, "src/types/"),
       "@utils": path.resolve(__dirname, "src/utils/"),
       "@errors": path.resolve(__dirname, "src/errors/"),
+      "@const": path.resolve(__dirname, "src/const/"),
     },
   },
   module: {

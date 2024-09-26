@@ -21,7 +21,8 @@
       "@services/*": ["services/*"],
       "@typings/*": ["types/*"],
       "@utils/*": ["utils/*"],
-      "@errors/*": ["errors/*"]
+      "@errors/*": ["errors/*"],
+      "@const/*": ["const/*"]
     }
   },
   "include": ["src/**/*"],

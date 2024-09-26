@@ -10,6 +10,7 @@ import { Command } from "commander";
 //@ts-ignore
 import { SMTPChannel } from "smtp-channel"; // Deals with maintaining TCP sockets nicely
 import { v4 as uuid } from "uuid";
+import chalk from "chalk";
 import { version } from "../package.json";
 
 import { ConfigurationParser } from "@services/Configuration";
@@ -20,6 +21,7 @@ import { ParsedArticle } from "@services/Article/types";
 import { fetchHtml } from "@utils/fetchHtml";
 import { sanitizeOutputPath } from "@utils/sanitizeOutputPath";
 import { CommitReaderFileError } from "@errors/CommitReaderFileError";
+import { generateExampleConfigFile } from "@utils/generateExampleConfigFile";
 
 process.removeAllListeners("warning");
 
@@ -41,7 +43,6 @@ program
   )
   .option("-c, --config [string]", "config file path")
   .action(async (url: string | undefined, options) => {
-    const chalk = (await import("chalk")).default;
     try {
       console.log(
         `${chalk.blue.bold(`Started kindle-news-digest version ${version}...`)}`
@@ -251,6 +252,27 @@ program
       await file.cleanup();
 
       console.log(`${chalk.green.bold("Finished successfully!")}`);
+    } catch (error) {
+      console.log(chalk.bold.red(error));
+    }
+  });
+
+program
+  .command("get-config")
+  .description("Generate example configuration file used to create EPUBs")
+  .argument("[string]", "Output filename or path")
+  .action(async (outputPath: string | undefined) => {
+    const DEFAULT_OUT_FILENAME = "./ctr-config.yaml";
+    try {
+      console.log(`${chalk.blue.bold("Generating config file...")}`);
+      const destination = outputPath ?? DEFAULT_OUT_FILENAME;
+      const exampleConfigPath = await generateExampleConfigFile(destination);
+      console.log(chalk.green.bold(`Config file created!`));
+      console.log(
+        chalk(
+          `Open and edit config file then run 'content-to-reader create -c ${exampleConfigPath}'`
+        )
+      );
     } catch (error) {
       console.log(chalk.bold.red(error));
     }
