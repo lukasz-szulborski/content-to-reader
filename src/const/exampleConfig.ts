@@ -5,7 +5,7 @@ export const EXAMPLE_CONFIG = `#
 
 # Filename or output path of a result EPUB file. Not required if \`toDevice\` present.
 output: "news.epub"
-# In this section you configure automatic sending a result EPUB file to your device using your email account. Your credentials aren't stored in any way and are used solely for sending a result file to your device. Currently only Gmail is supported. Not required if \`output\` present.
+# In this section you configure automatic sending of a result EPUB file to your device using your Gmail account. Your credentials aren't stored in any way and are used solely for sending a result file to your device. Currently only Gmail is supported. Not required if \`output\` present.
 toDevice:
   # This is an email address of your reader device (ex. Kindle reader).
   deviceEmail: ""
