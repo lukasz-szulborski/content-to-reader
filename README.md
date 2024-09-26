@@ -11,21 +11,12 @@ Extract meaningful content from any website and turn it into an EPUB file. Send 
 npm i content-to-reader -g
 ```
 
-2. Create a config file in a `.yaml` format. You can either create an output file and/or send it to your device using Gmail account.
-
-```yaml
-# config.yaml
-output: "./todays_news.epub"
-toDevice:
-  deviceEmail: your_kindle_A3BcD2@kindle.com
-  senderEmail: your_email@gmail.com
-  senderPassword: "your password"
-pages:
-  - https://clickbaitnews.com/article/some_article_12msad1
-  - https://welldone.com/@user/10_easy_steps_to_whatever
+2. Generate configuration file template by running
+```bash
+content-to-reader get-config config.yaml
 ```
 
-3. Run this command to create an EPUB and/or send it to your Kindle
+3. Edit configuration file and run this command to create an EPUB and/or send it to your Kindle
 
 ```bash
 content-to-reader create -c ./config.yaml
@@ -110,6 +101,45 @@ If you've never sent to Kindle using email before, there are a few steps to foll
 First, [whitelist your email address](https://www.amazon.com/gp/help/customer/display.html%3FnodeId%3DGX9XLEVV8G4DB28H) in Amazon then [create application password for your Gmail account](https://support.google.com/mail/answer/185833?hl=en) so you can use it in `.yaml` config file. And that should do it.
 
 Currently only Gmail's SMTP server is supported.
+
+# Configuration file template and documentation
+```yaml
+# Filename or output path of a result EPUB file. Not required if `toDevice` present.
+output: "news.epub"
+# In this section you configure automatic sending of a result EPUB file to your device using your Gmail account. Your credentials aren't stored in any way and are used solely for sending a result file to your device. Currently only Gmail is supported. Not required if `output` present.
+toDevice:
+  # This is an email address of your reader device (ex. Kindle reader).
+  deviceEmail: ""
+  # This is an email address of your Gmail acccount
+  senderEmail: ""
+  # This is an application password for your Gmail account. Read up how to generate one: https://support.google.com/mail/answer/185833?hl=en
+  senderPassword: ""
+# In this section you configure content present in the result EPUB file.
+pages:
+    # You can extract content automatically by passing URL only.
+  - "https://page.com"
+    # Or use selectors to pick what you want.
+  - url: "https://page.com"
+    selectors:
+        # You can select first element encountered...
+      - name: "Header" # Name is not required but it may help debugging
+        first: ".page-content header"
+        # ... or all of them.
+      - name: "Content"
+        all:
+          # Use nested selectors to create verbose element queries
+          ".page-content .contents":
+            [
+              "h1",
+              "h2",
+              "h3",
+              "h4",
+              "h5",
+              "p",
+              "code",
+              { ".custom-tip": ["p", "div", ".some-class": ["a", "p"]] },
+            ]
+```
 
 # FAQ
 

@@ -5,7 +5,7 @@ import { ParsedArticle, ParsedArticleMetadata } from "@services/Article/types";
 
 export type ArticleContentSelector = {
   name?: string;
-} & ({ querySelectorAll: string } | { querySelector: string });
+} & ({ all: string } | { first: string });
 
 interface ArticleLike {
   /**
@@ -82,22 +82,29 @@ export class Article implements ArticleLike {
       ? articleElement.outerHTML
       : contentExtractionResult!;
 
+    // Manipulate final HTML so it renders well
+    const snippetJsDom = new JSDOM(htmlSnippet).window.document;
+    // Remove style snippets so readers can decide how things look
+    // What's more, when `style` tags are present, Amazon doesn't accept the file. Probably some of the CSS rules are not approved by their filters.
+    snippetJsDom.querySelectorAll("style").forEach((style) => style.remove());
+    // SVGs cause random page breaks and other formatting issues
+    // "SVG tags can lead to errors. We recommend removing SVG tags and using the image tag in HTML for images" ~ https://kdp.amazon.com/en_US/help/topic/G75V4YX5X8GRGXWV
+    snippetJsDom.querySelectorAll("svg").forEach((s) => s.remove());
+
     return {
-      htmlSnippet,
+      htmlSnippet: snippetJsDom.documentElement.outerHTML,
       metadata: this._metadata,
     };
   }
 
-  fromSelectors(
-    selectors: ArticleContentSelector[]
-  ): ParsedArticle {
+  fromSelectors(selectors: ArticleContentSelector[]): ParsedArticle {
     const JOIN_TOKEN = "<br>\n";
     const htmlDocument = this._htmlSnippet.window.document;
     const snippets = selectors.map((selector, i) => {
-      const isQuerySelector = "querySelector" in selector;
+      const isQuerySelector = "first" in selector;
       const queryResults = isQuerySelector
-        ? htmlDocument.querySelector(selector.querySelector)
-        : htmlDocument.querySelectorAll(selector.querySelectorAll);
+        ? htmlDocument.querySelector(selector.first)
+        : htmlDocument.querySelectorAll(selector.all);
       if (queryResults === null) {
         throw new Error(
           `${this._url} -> [${
@@ -105,7 +112,7 @@ export class Article implements ArticleLike {
           }]: Didn't find any elements matching query.`
         );
       }
-      return "innerHTML" in queryResults
+      return "outerHTML" in queryResults
         ? queryResults.outerHTML
         : Array.from(queryResults)
             .map((elem) => elem.outerHTML)

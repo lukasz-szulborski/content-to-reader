@@ -45,5 +45,17 @@ describe(`fetchHtml util function`, () => {
       },
       TIMEOUT
     );
+    test(
+      "Results should include valid intial order of URLs",
+      async () => {
+        const result = await fetchHtml(VALID_URLS);
+        const matchesOrder = Object.entries(result).reduce(
+          (acc, [url, result]) => VALID_URLS[result.order] === url && acc,
+          true
+        );
+        expect(matchesOrder).toBe(true);
+      },
+      TIMEOUT
+    );
   });
 });

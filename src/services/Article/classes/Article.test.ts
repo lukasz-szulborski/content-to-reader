@@ -57,7 +57,7 @@ describe("Extracting article from HTML with Article class", () => {
 
       beforeAll(async () => {
         const articleUrlHtmlMap = await fetchHtml([SEMANTIC_NEWS_URL]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
+        const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
         rawHtml = html;
         const article = new Article({ html, url });
         parsedArticle = await article.fromHtml();
@@ -73,7 +73,7 @@ describe("Extracting article from HTML with Article class", () => {
           const articleUrlHtmlMap = await fetchHtml([
             EXAMPLE_NON_SEMANTIC_NEWS_URL,
           ]);
-          const [[url, html]] = Object.entries(articleUrlHtmlMap);
+          const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
           const article = new Article({ html, url });
           await expect(article.fromHtml()).resolves.toBeDefined();
         },
@@ -89,17 +89,17 @@ describe("Extracting article from HTML with Article class", () => {
         const articleUrlHtmlMap = await fetchHtml([
           EXAMPLE_NON_SEMANTIC_NEWS_URL,
         ]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
+        const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
         rawHtml = html;
         const article = new Article({ html, url });
         const selectors: ArticleContentSelector[] = [
           {
             name: "header",
-            querySelector: ".wp-block-post-title",
+            first: ".wp-block-post-title",
           },
           {
             name: "content",
-            querySelectorAll: ["p", "img", "h1", "h2", "h3", "h4", "h5"]
+            all: ["p", "img", "h1", "h2", "h3", "h4", "h5"]
               .map((tag) => `.wp-block-post-content ${tag}`)
               .join(", "),
           },
@@ -133,11 +133,11 @@ describe("Extracting article from HTML with Article class", () => {
       let article: Article | null = null;
       const selectors: ArticleContentSelector[] = [
         {
-          querySelector: ".wp-block-post-bitle",
+          first: ".wp-block-post-bitle",
         },
         {
           name: "content",
-          querySelectorAll: ["p", "img", "h1", "h2", "h3", "h4", "h5"]
+          all: ["p", "img", "h1", "h2", "h3", "h4", "h5"]
             .map((tag) => `.wp-block-post-content ${tag}`)
             .join(", "),
         },
@@ -147,7 +147,7 @@ describe("Extracting article from HTML with Article class", () => {
         const articleUrlHtmlMap = await fetchHtml([
           EXAMPLE_NON_SEMANTIC_NEWS_URL,
         ]);
-        const [[url, html]] = Object.entries(articleUrlHtmlMap);
+        const [[url, { html }]] = Object.entries(articleUrlHtmlMap);
         article = new Article({ html, url });
       }, TIMEOUT);
 

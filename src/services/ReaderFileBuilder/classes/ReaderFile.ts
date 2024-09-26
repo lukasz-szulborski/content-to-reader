@@ -2,6 +2,7 @@ import { accessSync, constants } from "node:fs";
 import asyncFs from "node:fs/promises";
 
 import { FileReaderBinaryFormat } from "@typings/common";
+import { CommitReaderFileError } from "@errors/CommitReaderFileError";
 
 interface ReaderFileConstructor {
   /**
@@ -21,6 +22,12 @@ interface ReaderFileMethods {
    * @returns Buffer of the saved file
    */
   save(destination: string): Promise<Buffer>;
+  /**
+   * Get a buffer of the source e-book file.
+   *
+   * @returns Buffer of the temporary file
+   */
+  getBuff(): Promise<Buffer>;
   /**
    * Removes all temporary files related to this `ReaderFile` so they aren't left hanging forever (including EPUB itself).
    *
@@ -51,9 +58,7 @@ export class ReaderFile implements ReaderFileLike {
     // file path is valid and accessible.
     const fileAccessible = this.isTmpAccessibleSync(temporaryPath);
     if (!fileAccessible)
-      throw new Error(
-        `Fatal error. Node cannot access file at ${temporaryPath}.`
-      );
+      throw new Error(`Fatal error. Cannot access file at ${temporaryPath}.`);
 
     this._temporaryPath = temporaryPath;
     this._format = format;
@@ -61,13 +66,26 @@ export class ReaderFile implements ReaderFileLike {
 
   async save(destination: string): Promise<Buffer> {
     this.checkCleanup();
-    await asyncFs.copyFile(
-      this._temporaryPath,
-      destination,
-      asyncFs.constants.COPYFILE_EXCL
-    );
-    const newFile = await asyncFs.readFile(destination);
-    return newFile;
+    try {
+      await asyncFs.copyFile(
+        this._temporaryPath,
+        destination,
+        asyncFs.constants.COPYFILE_EXCL
+      );
+      const newFile = await asyncFs.readFile(destination);
+      return newFile;
+    } catch (error: unknown) {
+      throw new CommitReaderFileError(
+        error instanceof Error
+          ? error.message
+          : `Error during saving a file in ${destination}.`
+      );
+    }
+  }
+
+  async getBuff(): Promise<Buffer> {
+    this.checkCleanup();
+    return await asyncFs.readFile(this._temporaryPath);
   }
 
   async cleanup(): Promise<void> {
